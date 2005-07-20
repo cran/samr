@@ -173,12 +173,14 @@ multiclass.func <- function(x,y,s0=0){
 #  sigma <- sqrt(rowSums((ty-yhat)^2)/(ncol(yhat)-2))
 #  sd <- sigma/sqrt(sxx)
 #  tt <- scor/(sd+s0)
-#
 #  return(list(tt=tt, numer=scor, sd=sd))
 #
 #}
 quantitative.func  <-
 function(x,y,s0=0){
+
+# regression of x on y
+
 my=mean(y)
   yy <- y-my
   temp <- x%*%yy
@@ -287,7 +289,7 @@ samr.compute.delta.table <- function(samr.obj, min.foldchange=0, dels=NULL, nval
  lmax=sqrt(max(abs(sort(samr.obj$tt)-samr.obj$evo)))
 
 
-  dels=(seq(0,lmax, length=nvals)^2)
+if(is.null(dels)){dels=(seq(0,lmax, length=nvals)^2)}
 
   col=matrix(1,nrow=length(samr.obj$evo),ncol=nvals)
 
@@ -460,11 +462,14 @@ samr.plot <- function(samr.obj, del, min.foldchange=0) {
 
 
 
-localfdr <- function(samr.obj,  min.foldchange, perc=.01, df=6) {
+localfdr <- function(samr.obj,  min.foldchange, perc=.01, df=10) {
 
   ## estimates local fdr at score "d", using SAM object "samr.obj"
   ## "d" can be a vector of d scores
   ## returns estimate of symmetric fdr  as a percentage
+
+# this version uses a 1% symmetric window, and does not estimate fdr in
+# windows  having fewer than 100 genes
 
 
   ## to use: first run SAM in Splus, and then pass the resulting fit object to
@@ -473,13 +478,18 @@ localfdr <- function(samr.obj,  min.foldchange, perc=.01, df=6) {
 
 
 # I try two window shapes: symmetric and an assymetric one
-# that extends two-thirds for the right
-# for  pos scores, and vice-versa for neg scores.
-# currently I use the assymetric window to estimate the  local fdr
+# currently I use the symetric window to estimate the  local fdr
+
+ngenes=length(samr.obj$tt)
+mingenes=50
+
+# perc is increased, in order to get at least mingenes in a window
+perc=max(perc,mingenes/length(samr.obj$tt))
 
  nperms.to.use=min(20,ncol(samr.obj$ttstar))
 nperms=ncol(samr.obj$ttstar)
-  d=seq(min(samr.obj$tt),max(samr.obj$tt),length=100)
+
+d=seq(sort(samr.obj$tt)[1], sort(samr.obj$tt)[ngenes], length=100)
   ndscore <- length(d)
   dvector <- rep(NA,ndscore)
 
@@ -503,11 +513,10 @@ return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
 
       if(d[i]<0)
         {
-          r2 <- max(r-length(samr.obj$tt)*2*perc/3, 1)
-          r22= min(r+length(samr.obj$tt)*1*perc/3, length(samr.obj$tt))
+          r2 <- max(r-length(samr.obj$tt)*perc/2, 1)
+          r22= min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
 
           dlow <- sort(samr.obj$tt)[r2]
-          #dup <- d[i]
           dup=sort(samr.obj$tt)[r22]
 
         }
@@ -517,10 +526,9 @@ return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
 
       if(d[i]>0)
         {
-          r2 <- min(r+length(samr.obj$tt)*2*perc/3, length(samr.obj$tt))
-          r22 <- max(r-length(samr.obj$tt)*1*perc/3, 1)
+          r2 <- min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
+          r22 <- max(r-length(samr.obj$tt)*perc/2, 1)
           dup <- sort(samr.obj$tt)[r2]
-          #dlow <- d[i]
           dlow <- sort(samr.obj$tt)[r22]
 
         }
@@ -532,7 +540,6 @@ return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
       fdr <- rep(NA,nsim)
       fdr2 <- fdr
 
-
           if(!is.null(samr.obj$foldchange[1]) &  min.foldchange>0){
              temp=as.vector(samr.obj$foldchange.star[,1:nperms.to.use])
             ind.foldchange=(temp >=  min.foldchange) | (temp <=  min.foldchange)
@@ -543,15 +550,17 @@ return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
           fdr <-median(apply(temp,2,fdr.temp,dlow, dup, pi0, ind.foldchange))
           fdr.sym <-median(apply(temp,2,fdr.temp,dlow.sym, dup.sym, pi0, ind.foldchange))
 
-
       fdr <- 100*fdr/sum(o)
       fdr.sym <- 100*fdr.sym/sum(oo)
+
+
+
       dlow.sym <- dlow.sym
       dup.sym <-dup.sym
       dlow <- dlow
       dup <- dup
 
-      dvector[i] <- fdr
+      dvector[i] <- fdr.sym
 
     }
 
@@ -601,8 +610,10 @@ samr.compute.siggenes.table=function(samr.obj,del, data, delta.table,  min.foldc
 
   if(length(sig$plo)>0){ fdr.lo=predictlocalfdr(aa$smooth.object, samr.obj$tt[sig$plo])}
 
-
+qvalues=NULL
+if(length(sig$pup)>0 | length(sig$plo)>0){
   qvalues=qvalue.func(samr.obj,sig, delta.table)
+}
 
   
   res.up=NULL
@@ -670,12 +681,12 @@ samr.compute.siggenes.table=function(samr.obj,del, data, delta.table,  min.foldc
 
   if(!is.null(res.up)){ 
     o1=order(-samr.obj$tt[sig$pup])
-    res.up=res.up[o1,]
+    res.up=res.up[o1,,drop=F]
   }
 
   if(!is.null(res.lo)){
     o2=order(samr.obj$tt[sig$plo])
-    res.lo=res.lo[o2,]
+    res.lo=res.lo[o2,,drop=F]
   }
 
 
@@ -738,11 +749,18 @@ qvalue.func=function(samr.obj,sig, delta.table){
     qvalue.lo[ii]= FDR[oo]
 
   }
-# ensure that each qvalue vector is monotone non-ioncreasing
+
+# any qvalues that are missing, are set to 1 (the highest value)
+
+qvalue.lo[is.na(qvalue.lo)]=1
+qvalue.up[is.na(qvalue.up)]=1
+
+# ensure that each qvalue vector is monotone non-increasing
 
 o1=order(samr.obj$tt[sig$plo])
 qv1=qvalue.lo[o1]
 qv11=qv1
+
 if(length(qv1)>1){
 for(i in 2:length(qv1)){
   if(qv11[i]<qv11[i-1]){qv11[i]=qv11[i-1]}
@@ -750,7 +768,7 @@ for(i in 2:length(qv1)){
 qv111=qv11
 qv111[o1]=qv11
 }
-else{qv111=qvq}
+else{qv111=qv1}
 
 o2=order(samr.obj$tt[sig$pup])
 qv2=qvalue.up[o2]
@@ -836,17 +854,20 @@ est.s0<-function(tt,sd,s0.perc=seq(0,1, by=.05)){
     w<-quantile(sd,s0.perc[j])
     w[j==1]<-0
     tt2<-tt*sd/(sd+w)
+    tt2[tt2==Inf]=NA
     sds<-rep(0,100)
 
     for(i in 1:100){
-      sds[i]<-mad(tt2[a==i])
+      sds[i]<-mad(tt2[a==i], na.rm=TRUE)
     }
 
     cv.sd[j]<-sqrt(var(sds))/mean(sds)
   }
 
   o=(1:length(s0.perc))[cv.sd==min(cv.sd)]
-  s0.hat=quantile(sd,s0.perc[o])
+
+# we don;t allow taking s0.aht to be  0th percentile when min sd is 0
+  s0.hat=quantile(sd[sd!=0],s0.perc[o])
 
   return(list(s0.perc=s0.perc,cv.sd=cv.sd, s0.hat= s0.hat))
 
@@ -1176,6 +1197,7 @@ insert.value<-function(vec,newval,pos) {
 }
 
 permute<-function(elem) {
+# generates all perms of the vector elem
  if(!missing(elem)) {
   if(length(elem) == 2) return(matrix(c(elem,elem[2],elem[1]),nrow=2))
   last.matrix<-permute(elem[-1])
@@ -1190,6 +1212,14 @@ permute<-function(elem) {
  }
  else cat("Usage: permute(elem)\n\twhere elem is a vector\n")
 } 
+
+sample.perms <-function(elem, nperms) {
+# randomly generates  nperms of the vector elem
+ res=permute.rows(matrix(elem,nrow=nperms,ncol=length(elem),byrow=T))
+  return(res)
+ }
+
+
 
 
 integer.base.b <-
@@ -1265,7 +1295,6 @@ outerm=outerm[ind,]
      permsy[i,]=junk
     }}
   
-
 # next handle case when there are too many perms to enumerate
      if(total.nperms>nperms){
        all.perms.flag=0
@@ -1274,11 +1303,10 @@ outerm=outerm[ind,]
 
           block.perms=vector("list",nblocks)
          for(j in 1:nblocks){
-             block.perms[[j]]=permute(y[blocky==j])
+             block.perms[[j]]=sample.perms(y[blocky==j], nperms=nperms)
            }
          for(j in 1:nblocks){
-             o=sample(1:nrow(block.perms[[j]]),size=nperms,replace=TRUE)
-             permsy=cbind(permsy,block.perms[[j]][o,])
+             permsy=cbind(permsy,block.perms[[j]])
           }
    
             
@@ -1393,7 +1421,7 @@ if(sum(last3char=="End")!= sum(last5char=="Start")){
     tim=timey[jj]
     xc=t(scale(t(x[,jj]),center=TRUE,scale=FALSE))
     if(time.summary.type=="slope"){
-      newx[,j]=quantitative.func(xc,tim-mean(tim))$tt
+      newx[,j]=quantitative.func(xc,tim-mean(tim))$numer
     }
     if(time.summary.type=="signed.area"){
       newx[,j]=timearea.func(x[,jj],tim)$numer

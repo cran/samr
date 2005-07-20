@@ -17,7 +17,7 @@ samr.const.green.color <- 10
 samr.const.black.color <- 1
 
 # Note: the table samr.xl.data.types created by the
-# the Excel calling program has exaclyt these names as well
+# the Excel calling program has exactly these names as well
 
 
 samr <- function(data,  resp.type=c("Quantitative","Two class unpaired","Survival","Multiclass","One class", "Two class paired","Two class unpaired timecourse",
@@ -109,7 +109,6 @@ require(impute)
 x=impute.knn(x,k=knn.neighbors)
 }
   
-  
 are.blocks.specified=FALSE
 
 
@@ -122,7 +121,7 @@ if(center.arrays){
 
 # check if there are blocks for 2 class unpaired case
 if(resp.type==samr.const.twoclass.unpaired.response){
-    if(substring(y[1],2,6)=="Block"){
+    if(substring(y[1],2,6)=="Block" | substring(y[1],2,6)=="block"){
        junk=parse.block.labels.for.2classes(y)
        y=junk$y; blocky=junk$blocky
        are.blocks.specified=TRUE
@@ -163,7 +162,6 @@ stand.contrasts.95=NULL
 
 
 # do a thorough error  checking of the response data
-  
  check.format(y,resp.type=resp.type,censoring.status=censoring.status)
   
 
@@ -205,8 +203,13 @@ if(resp.type==samr.const.quantitative.response & regression.method=="ranks")
 # for wilcoxon or rank regression or patterndiscovery, we set s0 to the 5th percentile of the sd values (automatic
 # estimation is not possible as the values of sd are too coarse)
 
+# also if dataset is small (< 500 genes), we don't attempt automatic
+# estimation of s0
 
-if((resp.type==samr.const.quantitative.response & (testStatistic=="wilcoxon" | regression.method=="ranks")) | resp.type==samr.const.patterndiscovery.response)
+
+if((resp.type==samr.const.quantitative.response & (testStatistic=="wilcoxon" | regression.method=="ranks")) | resp.type==samr.const.patterndiscovery.response |
+resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"|
+nrow(x)<500)
 {s0=quantile(sd,.05); s0.perc= 0.05}
 
 
@@ -250,7 +253,6 @@ to (-1) (meaning that s0 should be set to zero)")
   eigengene=junk$eigengene
   }
 
-  
 # construct matrix of permutations 
 
 
@@ -273,7 +275,7 @@ if(resp.type==samr.const.twoclass.unpaired.response){
   
 if(resp.type==samr.const.oneclass.response){
 
-    allii= 0:((2^length(y))-1)
+  allii= 0:((2^length(y))-1)
     nperms.act=2^length(y)
     all.perms.flag=1
     if((2^length(y))>nperms){
@@ -333,7 +335,7 @@ stand.contrasts.star=array(NA,c(nrow(x),length(table(y)),nperms))
   # end of if(xltime=="regular" etc
 }
 
-  
+ 
 if(xl.mode=="next20" |  xl.mode=="lasttime"){
 
   # get stuff from prevfit
@@ -472,7 +474,7 @@ if(testStatistic=="wilcoxon"){
 # end of for b in first:last
 }
 
-  
+
 
 # sort columns of statistics from permuted samples, and compute expected order statistics
 

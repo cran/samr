@@ -22,6 +22,7 @@
 \alias{coxvar}
 \alias{coxstuff}
 \alias{permute}
+\alias{sample.perms}
 \alias{permute.rows}
 \alias{insert.value}
 \alias{integer.base.b}
@@ -62,7 +63,7 @@ timearea.func(x, y, s0 = 0)
 sumlengths(aa)
 detec.slab(samr.obj, del, min.foldchange)
 detec.horiz(samr.obj, cutlow, cutup, min.foldchange)
-localfdr(samr.obj, min.foldchange, perc = 0.01, df = 6)
+localfdr(samr.obj, min.foldchange, perc = 0.01, df = 10)
 predictlocalfdr(smooth.object, d)
 qvalue.func(samr.obj, sig, delta.table)
 foldchange.twoclass(x, y, logged2)
@@ -72,6 +73,7 @@ coxscor(x, y, ic, offset = rep(0, length(y)))
 coxvar(x, y, ic, offset = rep(0, length(y)), coxstuff.obj = NULL)
 coxstuff(x, y, ic, offset = rep(0, length(y)))
 permute(elem)
+sample.perms(elem, nperms)
 permute.rows(x)
 insert.value(vec, newval, pos)
 integer.base.b(x, b = 2)

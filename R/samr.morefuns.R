@@ -8,6 +8,7 @@
 
 ##samr.const.survival.response <- 2
 
+
 ##samr.const.multiclass.response <- 3
 
 ##samr.const.oneclass.response <- 4
@@ -30,17 +31,19 @@
 
 
 
-ttest.func <- function(x,y,s0=0){
+ttest.func <- function(x,y,s0=0, sd=NULL){
 
   n1 <- sum(y==1)
   n2 <- sum(y==2)
   
   p <- nrow(x)
-  m1 <- rowMeans(x[,y==1])
-  m2 <- rowMeans(x[,y==2])
+  m1 <- rowMeans(x[,y==1,drop=F])
+  m2 <- rowMeans(x[,y==2,drop=F])
 
 
+if(is.null(sd)){
   sd <- sqrt( ((n2-1) * varr(x[, y==2], meanx=m2) + (n1-1) * varr(x[, y==1], meanx=m1) )*(1/n1+1/n2)/(n1+n2-2) )
+}
 
   numer <-  m2 - m1
 
@@ -55,7 +58,7 @@ wilcoxon.func <- function(x,y,s0=0){
   n2 <- sum(y==2)
 p=nrow(x)
   
-r2= rowSums(t(apply(x,1,rank))[,y==2])
+r2= rowSums(t(apply(x,1,rank))[,y==2,drop=F])
 numer=r2- (n2/2)*(n2+1) -(n1*n2)/2
 sd=sqrt(n1*n2*(n1+n2+1)/12)
 tt= (numer)/(sd + s0)
@@ -66,11 +69,11 @@ tt= (numer)/(sd + s0)
 
 
 
-onesample.ttest.func <- function(x,y,s0=0){
+onesample.ttest.func <- function(x,y,s0=0, sd=NULL){
   n <- length(y)
   x <- x*matrix(y,nrow=nrow(x),ncol=ncol(x),byrow=TRUE)
   m <- rowMeans(x)
-  sd <- sqrt( varr(x, meanx=m)/n )
+ if(is.null(sd)){ sd <- sqrt( varr(x, meanx=m)/n)}
   dif.obs <- m/(sd + s0)
   return(list(tt=dif.obs, numer=m,sd=sd))
 
@@ -97,26 +100,23 @@ dimnames(eigengene)=list(NULL,c("sample number","value"))
 
 
 
-paired.ttest.func <- function(x,y,s0=0,useden=TRUE){
+paired.ttest.func <- function(x,y,s0=0, sd=NULL){
   nc <- ncol(x)/2
   o <- 1:nc
   o1 <- rep(0,ncol(x)/2);o2 <- o1
   for(j in 1:nc){o1[j] <- (1:ncol(x))[y==-o[j]]}
   for(j in 1:nc){o2[j] <- (1:ncol(x))[y==o[j]]}
-  d <- x[,o2]-x[,o1]
-  su <- x[,o2]+x[,o1]
-  den <- 1
-  sd <- NULL
+  d <- x[,o2,drop=F]-x[,o1,drop=F]
+  su <- x[,o2,drop=F]+x[,o1,drop=F]
   if(is.matrix(d)){ 
     m <-  rowMeans(d)
   }
   if(!is.matrix(d)) {m <- mean(d)}
-  if(useden){
+  if(is.null(sd)){
     if(is.matrix(d)){ sd <- sqrt(varr(d, meanx=m)/nc)}
     if(!is.matrix(d)){sd <- sqrt(var(d)/nc)}
-    den <- sd+s0
   }
-  dif.obs <- m/den
+  dif.obs <- m/(sd+s0)
   return(list(tt=dif.obs, numer=m, sd=sd))
 
 }
@@ -464,7 +464,7 @@ samr.plot <- function(samr.obj, del, min.foldchange=0) {
 
 localfdr <- function(samr.obj,  min.foldchange, perc=.01, df=10) {
 
-  ## estimates local fdr at score "d", using SAM object "samr.obj"
+  ## estimates compute.localfdr at score "d", using SAM object "samr.obj"
   ## "d" can be a vector of d scores
   ## returns estimate of symmetric fdr  as a percentage
 
@@ -472,13 +472,13 @@ localfdr <- function(samr.obj,  min.foldchange, perc=.01, df=10) {
 # windows  having fewer than 100 genes
 
 
-  ## to use: first run SAM in Splus, and then pass the resulting fit object to
+  ## to use: first run samr  and then pass the resulting fit object to
   ## localfdr
   ## NOTE: at most 20 of the perms are used to estimate the fdr (for speed sake)
 
 
 # I try two window shapes: symmetric and an assymetric one
-# currently I use the symetric window to estimate the  local fdr
+# currently I use the symmetric window to estimate the  compute.localfdr
 
 ngenes=length(samr.obj$tt)
 mingenes=50
@@ -502,7 +502,6 @@ d=seq(sort(samr.obj$tt)[1], sort(samr.obj$tt)[ngenes], length=100)
 fdr.temp=function(temp, dlow, dup, pi0, ind.foldchange){
 return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
 
-
   for(i in 1:ndscore)
 
     {
@@ -511,28 +510,29 @@ return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
       r22 <-round(max(r-length(samr.obj$tt)*perc/2, 1))
       dlow.sym <- sort(samr.obj$tt)[r22]
 
-      if(d[i]<0)
-        {
-          r2 <- max(r-length(samr.obj$tt)*perc/2, 1)
-          r22= min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
+#      if(d[i]<0)
+ #       {
+ #         r2 <- max(r-length(samr.obj$tt)*perc/2, 1)
+ #         r22= min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
+#
+#          dlow <- sort(samr.obj$tt)[r2]
+#          dup=sort(samr.obj$tt)[r22]
 
-          dlow <- sort(samr.obj$tt)[r2]
-          dup=sort(samr.obj$tt)[r22]
-
-        }
+ #       }
 
       r22 <- min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
       dup.sym <- sort(samr.obj$tt)[r22]
 
-      if(d[i]>0)
-        {
-          r2 <- min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
-          r22 <- max(r-length(samr.obj$tt)*perc/2, 1)
-          dup <- sort(samr.obj$tt)[r2]
-          dlow <- sort(samr.obj$tt)[r22]
+ #     if(d[i]>0)
+ #      {
+ #        r2 <- min(r+length(samr.obj$tt)*perc/2, length(samr.obj$tt))
+ #        r22 <- max(r-length(samr.obj$tt)*perc/2, 1)
+ #        dup <- sort(samr.obj$tt)[r2]
+ #        dlow <- sort(samr.obj$tt)[r22]
+#
+#       }
 
-        }
-      o <- samr.obj$tt>=dlow & samr.obj$tt<= dup & ind.foldchange
+#      o <- samr.obj$tt>=dlow & samr.obj$tt<= dup & ind.foldchange
       oo <- samr.obj$tt>=dlow.sym & samr.obj$tt<= dup.sym & ind.foldchange
 
 
@@ -547,22 +547,21 @@ return(sum(pi0*(temp>=dlow & temp<=dup &ind.foldchange)))}
 
          temp=samr.obj$ttstar0[,sample(1:nperms, size=nperms.to.use)]
 
-          fdr <-median(apply(temp,2,fdr.temp,dlow, dup, pi0, ind.foldchange))
+#          fdr <-median(apply(temp,2,fdr.temp,dlow, dup, pi0, ind.foldchange))
           fdr.sym <-median(apply(temp,2,fdr.temp,dlow.sym, dup.sym, pi0, ind.foldchange))
 
-      fdr <- 100*fdr/sum(o)
+#      fdr <- 100*fdr/sum(o)
       fdr.sym <- 100*fdr.sym/sum(oo)
 
 
 
       dlow.sym <- dlow.sym
       dup.sym <-dup.sym
-      dlow <- dlow
-      dup <- dup
 
       dvector[i] <- fdr.sym
 
     }
+
 
 om=!is.na(dvector) & (dvector!=Inf)
 aa=smooth.spline(d[om], dvector[om], df=df)
@@ -583,7 +582,7 @@ yhat=pmax(yhat,0)
 
 
 
-samr.compute.siggenes.table=function(samr.obj,del, data, delta.table,  min.foldchange=0, all.genes=FALSE){
+samr.compute.siggenes.table=function(samr.obj,del, data, delta.table,  min.foldchange=0, all.genes=FALSE, compute.localfdr=FALSE){
 
 
 
@@ -604,11 +603,15 @@ samr.compute.siggenes.table=function(samr.obj,del, data, delta.table,  min.foldc
     sig=list(pup=pup, plo=plo)
   }
 
+if(compute.localfdr){
   aa=localfdr(samr.obj, min.foldchange)
+
 
   if(length(sig$pup)>0){fdr.up=predictlocalfdr(aa$smooth.object,samr.obj$tt[sig$pup])}
 
+
   if(length(sig$plo)>0){ fdr.lo=predictlocalfdr(aa$smooth.object, samr.obj$tt[sig$plo])}
+ }
 
 qvalues=NULL
 if(length(sig$pup)>0 | length(sig$plo)>0){
@@ -625,16 +628,26 @@ if(length(sig$pup)>0 | length(sig$plo)>0){
   if((samr.obj$resp.type==samr.const.twoclass.unpaired.response | samr.obj$resp.type==samr.const.twoclass.paired.response) ){
 
     if(!is.null(sig$pup)){
-      res.up=cbind(sig$pup+1,data$genenames[sig$pup],data$geneid[sig$pup],samr.obj$tt[sig$pup],samr.obj$numer[sig$pup],samr.obj$sd[sig$pup],samr.obj$foldchange[sig$pup],qvalues$qvalue.up, fdr.up)
+      res.up=cbind(sig$pup+1,data$genenames[sig$pup],data$geneid[sig$pup],samr.obj$tt[sig$pup],samr.obj$numer[sig$pup],samr.obj$sd[sig$pup],samr.obj$foldchange[sig$pup],qvalues$qvalue.up)
 
-      dimnames(res.up)=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)", "Fold Change", "q-value(%)","localfdr(%)"))
+
+if(compute.localfdr){ res.up=cbind(res.up,fdr.up)}
+
+      temp.names=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)", "Fold Change", "q-value(%)"))
+
+if(compute.localfdr){temp.names[[2]]=c(temp.names[[2]], "localfdr(%)")}
+   dimnames(res.up)=temp.names
     }
 
     if(!is.null(sig$plo)){
-      res.lo=cbind(sig$plo+1,data$genenames[sig$plo],data$geneid[sig$plo],samr.obj$tt[sig$plo],samr.obj$numer[sig$plo],samr.obj$sd[sig$plo],   samr.obj$foldchange[sig$plo],qvalues$qvalue.lo, fdr.lo)
+      res.lo=cbind(sig$plo+1,data$genenames[sig$plo],data$geneid[sig$plo],samr.obj$tt[sig$plo],samr.obj$numer[sig$plo],samr.obj$sd[sig$plo],   samr.obj$foldchange[sig$plo],qvalues$qvalue.lo)
 
-      dimnames(res.lo)=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)", "Fold Change", "q-value(%)","localfdr(%)"))
+if(compute.localfdr){ res.lo=cbind(res.lo,fdr.lo)}
 
+      temp.names=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)", "Fold Change", "q-value(%)"))
+
+if(compute.localfdr){temp.names[[2]]=c(temp.names[[2]], "localfdr(%)")}
+   dimnames(res.lo)=temp.names
 
     }
 
@@ -645,10 +658,20 @@ if(length(sig$pup)>0 | length(sig$plo)>0){
   if(samr.obj$resp.type==samr.const.multiclass.response){
 
     if(!is.null(sig$pup)){
-      res.up=cbind(sig$pup+1,data$genenames[sig$pup],data$geneid[sig$pup],samr.obj$tt[sig$pup],samr.obj$numer[sig$pup],samr.obj$sd[sig$pup],samr.obj$stand.contrasts[sig$pup,],qvalues$qvalue.up, fdr.up)
+      res.up=cbind(sig$pup+1,data$genenames[sig$pup],data$geneid[sig$pup],samr.obj$tt[sig$pup],samr.obj$numer[sig$pup],samr.obj$sd[sig$pup],samr.obj$stand.contrasts[sig$pup,],qvalues$qvalue.up)
+
+if(compute.localfdr){ res.up=cbind(res.up,fdr.up)}
 
       collabs.contrast=paste("contrast-",as.character(1:ncol(samr.obj$stand.contrasts)),sep="")
-      dimnames(res.up)=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)",collabs.contrast,  "q-value(%)","localfdr(%)"))
+
+temp.names=list(NULL, c("Row", "Gene ID", 
+                "Gene Name", "Score(d)", "Numerator(r)", "Denominator(s+s0)", 
+                collabs.contrast, "q-value(%)"))
+
+if(compute.localfdr){temp.names[[2]]=c(temp.names[[2]], "localfdr(%)")}
+   dimnames(res.up)=temp.names
+
+
     }
 
     res.lo=NULL
@@ -665,15 +688,28 @@ if(length(sig$pup)>0 | length(sig$plo)>0){
   if(!done){
     if(!is.null(sig$pup)){
       res.up=cbind(sig$pup+1,data$genenames[sig$pup],data$geneid[sig$pup],samr.obj$tt[sig$pup],samr.obj$numer[sig$pup],samr.obj$sd[sig$pup], 
-        samr.obj$foldchange[sig$pup],qvalues$qvalue.up, fdr.up)
+        samr.obj$foldchange[sig$pup],qvalues$qvalue.up)
 
-      dimnames(res.up)=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)","q-value(%)","localfdr(%)"))
+if(compute.localfdr){ res.up=cbind(res.up,fdr.up)}
+
+      temp.names=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)","q-value(%)"))
+
+if(compute.localfdr){temp.names[[2]]=c(temp.names[[2]], "localfdr(%)")}
+   dimnames(res.up)=temp.names
+
     }
 
     if(!is.null(sig$plo)){
-      res.lo=cbind(sig$plo+1,data$genenames[sig$plo],data$geneid[sig$plo],samr.obj$tt[sig$plo],samr.obj$numer[sig$plo],samr.obj$sd[sig$plo], samr.obj$foldchange[sig$plo],qvalues$qvalue.lo, fdr.lo)
+      res.lo=cbind(sig$plo+1,data$genenames[sig$plo],data$geneid[sig$plo],samr.obj$tt[sig$plo],samr.obj$numer[sig$plo],samr.obj$sd[sig$plo], samr.obj$foldchange[sig$plo],qvalues$qvalue.lo)
 
-      dimnames(res.lo)=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)","q-value(%)","localfdr(%)"))
+if(compute.localfdr){ res.lo=cbind(res.lo,fdr.lo)}
+
+
+     temp.names=list(NULL,c("Row","Gene ID","Gene Name", "Score(d)", "Numerator(r)","Denominator(s+s0)","q-value(%)"))
+
+if(compute.localfdr){temp.names[[2]]=c(temp.names[[2]], "localfdr(%)")}
+   dimnames(res.lo)=temp.names
+
     }
     done=TRUE
   }
@@ -795,16 +831,10 @@ else{qv222=qv2}
 
 foldchange.twoclass=function(x,y, logged2){
 
-  
-
   if(logged2){x=2^x}
 
-  n1 <- sum(y==1)
-  n2 <- sum(y==2)
-
-  p <- nrow(x)
-  m1 <- rowMeans(x[,y==1])
-  m2 <- rowMeans(x[,y==2])
+  m1 <- rowMeans(x[,y==1,drop=F])
+  m2 <- rowMeans(x[,y==2,drop=F])
   return(m2/m1)
 
 }
@@ -817,11 +847,7 @@ foldchange.twoclass=function(x,y, logged2){
 
 foldchange.paired=function(x,y,logged2){
 
-  
-
   if(logged2){x=2^x}
-
-  
 
   nc <- ncol(x)/2
   o <- 1:nc
@@ -830,7 +856,7 @@ foldchange.paired=function(x,y,logged2){
   for(j in 1:nc){o2[j] <- (1:ncol(x))[y==o[j]]}
 
 
-  d <- x[,o2]/x[,o1]
+  d <- x[,o2,drop=F]/x[,o1, drop=F]
 
   m <- rowMeans(d)
 
@@ -840,13 +866,22 @@ foldchange.paired=function(x,y,logged2){
 
 
 
+
+
+
+
+
+
 est.s0<-function(tt,sd,s0.perc=seq(0,1, by=.05)){
 
 
   ## estimate s0 (exchangeability) factor for denominator.
   ## returns the actual estimate s0 (not a percentile)
 
-  a<-cut(sd,breaks=quantile(sd,seq(0,1,len=101)),labels=F)
+br=unique(quantile(sd,seq(0,1,len=101)))
+nbr=length(br)
+
+  a<-cut(sd,br,labels=F)
   a[is.na(a)]<-1
   cv.sd<-rep(0,length(s0.perc))
 
@@ -855,9 +890,9 @@ est.s0<-function(tt,sd,s0.perc=seq(0,1, by=.05)){
     w[j==1]<-0
     tt2<-tt*sd/(sd+w)
     tt2[tt2==Inf]=NA
-    sds<-rep(0,100)
+    sds<-rep(0,nbr-1)
 
-    for(i in 1:100){
+    for(i in 1:(nbr-1)){
       sds[i]<-mad(tt2[a==i], na.rm=TRUE)
     }
 
@@ -866,7 +901,7 @@ est.s0<-function(tt,sd,s0.perc=seq(0,1, by=.05)){
 
   o=(1:length(s0.perc))[cv.sd==min(cv.sd)]
 
-# we don;t allow taking s0.aht to be  0th percentile when min sd is 0
+# we don;t allow taking s0.hat to be  0th percentile when min sd is 0
   s0.hat=quantile(sd[sd!=0],s0.perc[o])
 
   return(list(s0.perc=s0.perc,cv.sd=cv.sd, s0.hat= s0.hat))
@@ -1284,7 +1319,7 @@ ind=rep(TRUE,nrow(outerm))
       ind=ind&outerm[,j]<=factorial(tab[j])
    }
 
-outerm=outerm[ind,]
+outerm=outerm[ind,,drop=F]
 # finally, construct permutation matrix from outer product
     permsy=matrix(NA,nrow=total.nperms,ncol=ny)
     for(i in 1:total.nperms){
@@ -1415,21 +1450,28 @@ if(sum(last3char=="End")!= sum(last5char=="Start")){
   npeople=length(unique(person.id))
 
   newx=matrix(NA,nrow=nrow(x),ncol=npeople)
+  sd=matrix(NA,nrow=nrow(x),ncol=npeople)
+
 
   for(j in 1:npeople){
     jj=person.id==j
     tim=timey[jj]
-    xc=t(scale(t(x[,jj]),center=TRUE,scale=FALSE))
+    xc=t(scale(t(x[,jj, drop=F]),center=TRUE,scale=FALSE))
     if(time.summary.type=="slope"){
-      newx[,j]=quantitative.func(xc,tim-mean(tim))$numer
+      junk=quantitative.func(xc,tim-mean(tim))
+      newx[,j]=junk$numer
+      sd[,j]=junk$sd
     }
     if(time.summary.type=="signed.area"){
-      newx[,j]=timearea.func(x[,jj],tim)$numer
+      junk=timearea.func(x[,jj, drop=F],tim)
+      newx[,j]=junk$numer
+      sd[,j]=junk$sd
+     
     }
   }
 
   y.unique=y.act[!duplicated(person.id)]
-  return(list(y=y.unique,  x=newx))
+  return(list(y=y.unique,  x=newx, sd=sd))
 }
 
 
@@ -1554,5 +1596,167 @@ permute.rows <-function(x)
         p <- dd[2]
         mm <- runif(length(x)) + rep(seq(n) * 10, rep(p, n))
         matrix(t(x)[order(mm)], n, p, byrow = TRUE)
+}
+
+
+samr.assess.samplesize=function(samr.obj, data, dif, samplesize.factors=c(1,2,3,5), min.genes=10, max.genes=nrow(data$x)/2){
+
+if(length(samplesize.factors)>4){
+ stop("Length of samplesize.factors must be less than or equal to 4")
+}
+n.ssf=length(samplesize.factors)
+
+if(samr.obj$resp.type!=samr.const.twoclass.unpaired.response &
+samr.obj$resp.type!=samr.const.twoclass.paired.response &
+samr.obj$resp.type!=samr.const.oneclass.response & samr.obj$resp.type!=samr.const.survival.response){
+ stop("Function only implemented for  twoclass.unpaired, twoclass.paired,
+ oneclass and survival data types")
+}
+m=nrow(data$x)
+n=ncol(data$x)
+
+if(samr.obj$resp.type==samr.const.twoclass.unpaired.response){
+n1=sum(data$y==1)
+n2=sum(data$y==2)
+}
+
+if(samr.obj$resp.type==samr.const.twoclass.paired.response){
+n1=n/2
+n2=n/2
+}
+
+
+nreps=3
+klist=round(exp(seq(log(min.genes),log(max.genes),length=10)))
+#power=rep(NA,length(klist))
+#type1=rep(NA,length(klist))
+fdr=matrix(NA,nrow=length(klist), ncol=n.ssf)
+fdr90=matrix(NA,nrow=length(klist), ncol=n.ssf)
+fdr10=matrix(NA,nrow=length(klist), ncol=n.ssf)
+fnr=matrix(NA,nrow=length(klist), ncol=n.ssf)
+fnr90=matrix(NA,nrow=length(klist), ncol=n.ssf)
+fnr10=matrix(NA,nrow=length(klist), ncol=n.ssf)
+
+cutp=matrix(NA,nrow=length(klist), ncol=n.ssf)
+
+
+
+
+#sd=samr.obj$sd-samr.obj$s0
+sd=samr.obj$sd
+
+if(samr.obj$resp.type==samr.const.twoclass.unpaired.response | samr.obj$resp.type==samr.const.twoclass.paired.response){
+  sigma=sd/sqrt(1/n1 +1/n2)
+  difm=dif/(sigma*sqrt(1/n1 +1/n2))
+
+}
+if(samr.obj$resp.type==samr.const.oneclass.response | samr.obj$resp.type==samr.const.survival.response){
+  sigma=(sqrt(n))*sd
+  difm=sqrt(n)*dif/sigma
+}
+
+# we only use the  20 of the perms, for speed
+nperms=min(20,samr.obj$nperms)
+perms.to.use=sample(1:samr.obj$nperms,size=nperms)
+
+#note: here I permute within each col of zstar, so that the
+# genes that are  modified are different for each permutation
+zstar0=t(permute.rows(t(samr.obj$ttstar0[,perms.to.use])))
+
+
+ii=0
+for(k in klist){
+     ii=ii+1
+     oo=sample(1:m,size=k)
+     temp=matrix(F,nrow=nrow(zstar0),ncol=ncol(zstar0))
+     temp[oo,]=T
+
+     for(kk in 1:n.ssf){
+       zstar=zstar0
+       zstar[oo,]=zstar[oo,]+difm[oo]*sqrt(samplesize.factors[kk])
+     cutp[ii,kk]= quantile(abs(zstar),1-(k/m))
+     temp[oo,]=T
+#     power[ii]=(sum(abs(zstar[oo,])>cutp[ii,kk])/samr.obj$nperms)/k
+#     type1[ii]=(sum(abs(zstar[-oo,])>cutp[ii,kk])/samr.obj$nperms)/(m-k)
+     u0=colSums(abs(zstar)>cutp[ii,kk] & !temp)
+     r0=colSums(abs(zstar)>cutp[ii,kk])
+     oo2=!is.na(u0/r0)
+     fdr[ii,kk]= median((u0/r0)[oo2])
+     fdr90[ii,kk]= quantile((u0/r0)[oo2], .90)
+     fdr10[ii,kk]= quantile((u0/r0)[oo2], .10)
+     v0 = colSums(abs(zstar) < cutp[ii, kk] & temp)
+     w0=colSums(abs(zstar)<cutp[ii,kk])
+      oo3=!is.na(v0/w0)
+     fnr[ii,kk]= median( (v0/w0)[oo3])
+     fnr90[ii,kk]=quantile((v0/w0)[oo3], .90)
+     fnr10[ii,kk]=quantile((v0/w0)[oo3], .10)
+}}
+
+
+ng=round(klist)
+oo=!duplicated(ng)
+results=array(NA,c(sum(oo),8,n.ssf))
+for(kk in 1:n.ssf){
+results[,,kk]=cbind(ng,cutp[,kk],fdr[,kk],fdr90[,kk],fdr10[,kk],fnr[,kk],fnr90[,kk], fnr10[,kk] )[oo,]
+}
+dimnames(results)=list(NULL,c("number of genes", "cutpoint","FDR,1-power", "FDR90","FDR10", "FNR,type1 error", "FNR90", "FNR10"),as.character(samplesize.factors))
+
+return(list(results=results,dif.call=dif,difm=mean(difm), samplesize.factors=samplesize.factors, n=ncol(data$x)))
+}
+
+samr.assess.samplesize.plot <- function(samr.assess.samplesize.obj, logx=TRUE,  call.win.metafile=FALSE){
+
+n.ssf=length(samr.assess.samplesize.obj$samplesize.factors)
+
+if(call.win.metafile){win.metafile()}
+
+if(n.ssf==1){par(mfrow=c(1,1))}
+if(n.ssf==2) {par(mfrow=c(1,2))}
+if(n.ssf>2) {par(mfrow=c(2,2))}
+
+par(oma=c(0,0,2,0))
+
+na.min=function(x){min(x[!is.na(x)])}
+na.max=function(x){max(x[!is.na(x)])}
+
+temp=samr.assess.samplesize.obj$results
+
+ymax=max(c(temp[,"FDR,1-power",],temp[,"FDR90",],temp[,"FDR10",], 
+temp[,"FNR,type1 error",], temp[,"FDR90",], temp[,"FDR10",]))
+
+for(kk in 1:n.ssf){
+results=samr.assess.samplesize.obj$results[,,kk]
+
+if(logx){
+plot(results[,"number of genes"],results[,"FDR,1-power"],log="x",
+xlab="Number of genes",ylab="" ,type="n", ylim=c(0,ymax))
+}
+if(!logx){
+plot(results[,"number of genes"],results[,"FDR,1-power"],
+xlab="Number of genes",ylab="" ,type="n", ylim=c(0,ymax))
+}
+
+lines(results[,"number of genes"],results[,"FDR,1-power"],col=2, type="b",pch=19)
+lines(results[,"number of genes"],results[,"FDR90"],col=2, lty=2,pch=19)
+lines(results[,"number of genes"],results[,"FDR10"],col=2, lty=2,pch=19)
+
+lines(results[,"number of genes"],results[,"FNR,type1 error"],col=3,type="b",pch=19)
+lines(results[,"number of genes"],results[,"FNR90"],col=3, lty=2,pch=19)
+lines(results[,"number of genes"],results[,"FNR10"],col=3, lty=2,pch=19)
+
+mtext("FDR, 1-Power",side=2, col=2,cex=.8)
+mtext("FNR, Type 1 error",side=4, col=3,cex=.8)
+abline(h=.05,lty=3)
+
+fac=samr.assess.samplesize.obj$samplesize.factors[kk]
+n=samr.assess.samplesize.obj$n
+
+title(paste("Sample size=",round(n*fac,0)),cex=.7)
+}
+title(paste("Results for mean difference=",round(samr.assess.samplesize.obj$dif.call,2)) ,outer=T)
+
+if(call.win.metafile){dev.off()}
+
+  return()
 }
 

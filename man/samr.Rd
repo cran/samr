@@ -7,7 +7,7 @@ variable, such as a group indicator, quantitative variable or  survival time
 }
 \usage{
 samr(data,  resp.type=c("Quantitative","Two class unpaired","Survival","Multiclass","One class", "Two class paired","Two class unpaired timecourse",
-"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL)
+"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10, random.seed=NULL,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL)
 }
 \arguments{
   \item{data}{ Data object with components x- p by n matrix of features,
@@ -37,6 +37,7 @@ Only useful for time course data, where x contains summaries of the features
 over time. Otherwise x is the same as the input data data\$x}
 \item{knn.neighbors}{Number of nearest neighbors to use for imputation
 of missing features values}
+\item{random.seed}{Optional initial seed for random number generator (integer)}
 \item{xl.mode}{Used by Excel interface}
 \item{xl.time}{Used by Excel interface}
 \item{xl.prevfit}{Used by Excel interface}

@@ -5,7 +5,7 @@
  Computes significant genes table, starting with samr object "samr.obj" and  delta.table "delta.table"
 }
 \usage{
-samr.compute.siggenes.table(samr.obj, del, data, delta.table,  min.foldchange=0, all.genes=FALSE)
+samr.compute.siggenes.table(samr.obj, del, data, delta.table,  min.foldchange=0, all.genes=FALSE, compute.localfdr=FALSE)
 }
 \arguments{
 \item{samr.obj}{ Object returned from call to samr}
@@ -16,6 +16,7 @@ samr.compute.siggenes.table(samr.obj, del, data, delta.table,  min.foldchange=0,
 \item{min.foldchange}{The minimum fold change desired; should be >1;
 default is zero, meaning no fold change criterion is applied}
 \item{all.genes}{Should all genes be listed? Default FALSE}
+\item{compute.localfdr}{Should the local fdrs be computed (this can take some time)? Default FALSE}
 }
 \value{
  return(list(genes.up=res.up,

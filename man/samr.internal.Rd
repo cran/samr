@@ -22,8 +22,8 @@
 \alias{coxvar}
 \alias{coxstuff}
 \alias{permute}
-\alias{sample.perms}
 \alias{permute.rows}
+\alias{sample.perms}
 \alias{insert.value}
 \alias{integer.base.b}
 \alias{varr}
@@ -49,12 +49,13 @@
 \alias{samr.xl.parse.survival}
 \alias{samr.xl.parse.patterndiscovery}
 \alias{samr.xl.error.trace}
+\alias{samr.xl.impute.data}
 \description{Internal samr functions}
 \usage{
-ttest.func(x, y, s0 = 0)
+ttest.func(x, y, s0 = 0, sd=NULL)
 wilcoxon.func(x, y, s0 = 0)
-onesample.ttest.func(x, y, s0 = 0)
-paired.ttest.func(x, y, s0 = 0, useden = TRUE)
+onesample.ttest.func(x, y, s0 = 0, sd=NULL)
+paired.ttest.func(x, y, s0 = 0, sd=NULL)
 cox.func(x, y, censoring.status, s0 = 0)
 multiclass.func(x, y, s0 = 0)
 quantitative.func(x, y, s0 = 0)
@@ -101,6 +102,7 @@ samr.xl.compute.plot.xy(samr.obj, del, min.foldchange = 0, plot = FALSE)
 samr.xl.parse.survival(y)
 samr.xl.parse.patterndiscovery(y)
 samr.xl.error.trace()
+samr.xl.impute.data(data.obj)
 }
 \author{Balasubrimanian Narasimhan and Robert Tibshirani}
 

@@ -1,0 +1,55 @@
+samr.assess.samplesize.plot <- function(samr.assess.samplesize.obj, logx=TRUE,  call.win.metafile=FALSE){
+
+if(call.win.metafile){win.metafile()}
+
+
+if(n.ssf==1){par(mfrow=c(1,1))}
+if(n.ssf==2) {par(mfrow=c(1,2))
+if(n.ssf>2) {par(mfrow=c(2,2))
+
+par(oma=c(0,0,2,0))
+
+na.min=function(x){min(x[!is.na(x)])}
+na.max=function(x){max(x[!is.na(x)])}
+
+temp=samr.assess.samplesize.obj$results
+
+ymax=max(c(temp[,"FDR,1-power",],temp[,"FDR90",],temp[,"FDR10",], 
+temp[,"FNR,type1 error",], temp[,"FDR90",], temp[,"FDR10",]))
+
+for(kk in 1:n.ssf){
+results=samr.assess.samplesize.obj$results[,,kk]
+
+if(logx){
+plot(results[,"number of genes"],results[,"FDR,1-power"],log="x",
+xlab="Number of genes",ylab="" ,type="n", ylim=c(0,ymax))
+}
+if(!logx){
+plot(results[,"number of genes"],results[,"FDR,1-power"],
+xlab="Number of genes",ylab="" ,type="n", ylim=c(0,ymax))
+}
+
+lines(results[,"number of genes"],results[,"FDR,1-power"],col=2, type="b",pch=19)
+lines(results[,"number of genes"],results[,"FDR90"],col=2, lty=2,pch=19)
+lines(results[,"number of genes"],results[,"FDR10"],col=2, lty=2,pch=19)
+
+lines(results[,"number of genes"],results[,"FNR,type1 error"],col=3,type="b",pch=19)
+lines(results[,"number of genes"],results[,"FNR90"],col=3, lty=2,pch=19)
+lines(results[,"number of genes"],results[,"FNR10"],col=3, lty=2,pch=19)
+
+mtext("FDR, 1-Power",side=2, col=2,cex=.8)
+mtext("FNR, Type 1 error",side=4, col=3,cex=.8)
+abline(h=.05,lty=3)
+
+fac=samr.assess.samplesize.obj$samplesize.factors[kk]
+n=samr.assess.samplesize.obj$n
+
+title(paste("Sample size=",round(n*fac,0)),cex=.7)
+}
+title(paste("Results for mean difference=",round(samr.assess.samplesize.obj$dif.call,2)) ,outer=T)
+
+if(call.win.metafile){dev.off()}
+
+  return()
+}
+

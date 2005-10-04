@@ -1,0 +1,153 @@
+
+
+samr.assess.samplesize=function(samr.obj, data, dif, samplesize.factors=c(1,2,3,5), min.genes=10, max.genes=nrow(data$x)/2){
+
+if(length(samplesize.factors)!=4){
+ stop("Length of samplesize.factors must be 4")
+}
+
+if(samr.obj$resp.type!=samr.const.twoclass.unpaired.response &
+samr.obj$resp.type!=samr.const.twoclass.paired.response &
+samr.obj$resp.type!=samr.const.oneclass.response & samr.obj$resp.type!=samr.const.survival.response){
+ stop("Function only implemented for  twoclass.unpaired, twoclass.paired,
+ oneclass and survival data types")
+}
+m=nrow(data$x)
+n=ncol(data$x)
+
+if(samr.obj$resp.type==samr.const.twoclass.unpaired.response){
+n1=sum(data$y==1)
+n2=sum(data$y==2)
+}
+
+if(samr.obj$resp.type==samr.const.twoclass.paired.response){
+n1=n/2
+n2=n/2
+}
+
+
+nreps=3
+klist=exp(seq(log(min.genes),log(max.genes),length=10))
+#power=rep(NA,length(klist))
+#type1=rep(NA,length(klist))
+fdr=matrix(NA,nrow=length(klist), ncol=4)
+fdr90=matrix(NA,nrow=length(klist), ncol=4)
+fdr10=matrix(NA,nrow=length(klist), ncol=4)
+fnr=matrix(NA,nrow=length(klist), ncol=4)
+fnr90=matrix(NA,nrow=length(klist), ncol=4)
+fnr10=matrix(NA,nrow=length(klist), ncol=4)
+
+
+
+
+cutp=matrix(NA,nrow=length(klist), ncol=4)
+
+
+
+sd=samr.obj$sd-samr.obj$s0
+if(samr.obj$resp.type==samr.const.twoclass.unpaired.response | samr.obj$resp.type==samr.const.twoclass.paired.response){
+  sigma=sd/sqrt(1/n1 +1/n2)
+  difm=dif/(sigma*sqrt(1/n1 +1/n2))
+
+}
+if(samr.obj$resp.type==samr.const.oneclass.response | samr.obj$resp.type==samr.const.survival.response){
+  sigma=(sqrt(n))*sd
+  difm=sqrt(n)*dif/sigma
+}
+
+# we only use the  20 of the perms, for speed
+nperms=min(20,samr.obj$nperms)
+perms.to.use=sample(1:samr.obj$nperms,size=nperms)
+
+#note: here I permute within each col of zstar, so that the
+# genes that are  modified are different for each permutation
+zstar0=t(permute.rows(t(samr.obj$ttstar0[,perms.to.use])))
+
+
+ii=0
+for(k in klist){
+     ii=ii+1
+     oo=sample(1:m,size=k)
+     temp=matrix(F,nrow=nrow(zstar0),ncol=ncol(zstar0))
+     temp[oo,]=T
+
+     for(kk in 1:4){
+       zstar=zstar0
+       zstar[oo,]=zstar[oo,]+difm[oo]*sqrt(samplesize.factors[kk])
+     cutp[ii,kk]= quantile(abs(zstar),1-(k/m))
+     temp[oo,]=T
+#     power[ii]=(sum(abs(zstar[oo,])>cutp[ii,kk])/samr.obj$nperms)/k
+#     type1[ii]=(sum(abs(zstar[-oo,])>cutp[ii,kk])/samr.obj$nperms)/(m-k)
+     u0=colSums(abs(zstar)>cutp[ii,kk] & !temp)
+     r0=colSums(abs(zstar)>cutp[ii,kk])
+     oo2=!is.na(u0/r0)
+     fdr[ii,kk]= median((u0/r0)[oo2])
+     fdr90[ii,kk]= quantile((u0/r0)[oo2], .90)
+     fdr10[ii,kk]= quantile((u0/r0)[oo2], .10)
+     v0 = colSums(abs(zstar) < cutp[ii, kk] & temp)
+     w0=colSums(abs(zstar)<cutp[ii,kk])
+      oo3=!is.na(v0/w0)
+     fnr[ii,kk]= median( (v0/w0)[oo3])
+     fnr90[ii,kk]=quantile((v0/w0)[oo3], .90)
+     fnr10[ii,kk]=quantile((v0/w0)[oo3], .10)
+}}
+
+
+ng=round(klist)
+oo=!duplicated(ng)
+results=array(NA,c(sum(oo),8,4))
+for(kk in 1:4){
+results[,,kk]=cbind(ng,cutp[,kk],fdr[,kk],fdr90[,kk],fdr10[,kk],fnr[,kk],fnr90[,kk], fnr10[,kk] )[oo,]
+}
+dimnames(results)=list(NULL,c("number of genes", "cutpoint","FDR,1-power", "FDR90","FDR10" "FNR,type1 error", "FNR90", "FNR10"),as.character(samplesize.factors))
+
+return(list(results=results,dif.call=dif,difm=mean(difm), samplesize.factors=samplesize.factors, n=ncol(data$x)))
+}
+
+samr.assess.samplesize.plot <- function(samr.assess.samplesize.obj, logx=TRUE,  call.win.metafile=FALSE){
+
+if(call.win.metafile){win.metafile()}
+
+
+par(mfrow=c(2,2))
+par(oma=c(0,0,2,0))
+
+na.min=function(x){min(x[!is.na(x)])}
+na.max=function(x){max(x[!is.na(x)])}
+
+ymax=max(c(samr.assess.samplesize.obj$results[,"FDR,1-power",],samr.assess.samplesize.obj$results[,"FNR,type1 error",]))
+
+for(kk in 1:4){
+results=samr.assess.samplesize.obj$results[,,kk]
+
+if(logx){
+plot(results[,"number of genes"],results[,"FDR,1-power"],log="x",
+xlab="Number of genes",ylab="" ,type="n", ylim=c(0,ymax))
+}
+if(!logx){
+plot(results[,"number of genes"],results[,"FDR,1-power"],
+xlab="Number of genes",ylab="" ,type="n", ylim=c(0,ymax))
+}
+
+lines(results[,"number of genes"],results[,"FDR,1-power"],col=2, type="b")
+#lines(results[,"number of genes"],results[,"FDR-90perc"],col=2, lty=2)
+
+lines(results[,"number of genes"],results[,"FNR,type1 error"],col=3,type="b")
+#lines(results[,"number of genes"],results[,"FNR-90perc"],col=3, lty=2)
+
+mtext("FDR, 1-Power",side=2, col=2,cex=.8)
+mtext("FNR, Type 1 error",side=4, col=3,cex=.8)
+abline(h=.05,lty=3)
+
+fac=samr.assess.samplesize.obj$samplesize.factors[kk]
+n=samr.assess.samplesize.obj$n
+
+title(paste("Sample size=",round(n*fac,0)),cex=.7)
+}
+title(paste("Results for mean difference=",round(samr.assess.samplesize.obj$dif.call,2)) ,outer=T)
+
+if(call.win.metafile){dev.off()}
+
+  return()
+}
+

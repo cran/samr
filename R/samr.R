@@ -21,7 +21,7 @@ samr.const.black.color <- 1
 
 
 samr <- function(data,  resp.type=c("Quantitative","Two class unpaired","Survival","Multiclass","One class", "Two class paired","Two class unpaired timecourse",
-"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL){
+"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10, random.seed=NULL,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL){
 
 
 ##SAM method. copyright june 2000: Goss, Tibshirani and Chu.
@@ -63,8 +63,10 @@ samr <- function(data,  resp.type=c("Quantitative","Two class unpaired","Surviva
 
 xl.mode=match.arg(xl.mode)
 
+if(!is.null(random.seed)){
+  set.seed(random.seed)
+}
 
-  
   
 if(xl.mode=="regular" | xl.mode=="firsttime"){
   
@@ -128,7 +130,7 @@ if(resp.type==samr.const.twoclass.unpaired.response){
     }}
 
 # make sure 1,2, -1,1,, etc are non-character values  coming from Excel
- if( resp.type==samr.const.twoclass.unpaired.response |resp.type==samr.const.twoclass.paired.response | resp.type==samr.const.oneclass.response | resp.type==samr.const.quantitative.response){y=as.numeric(y)}
+ if( resp.type==samr.const.twoclass.unpaired.response |resp.type==samr.const.twoclass.paired.response | resp.type==samr.const.oneclass.response | resp.type==samr.const.quantitative.response | resp.type==samr.const.multiclass.response) {y=as.numeric(y)}
 
 
 
@@ -137,13 +139,21 @@ if(resp.type==samr.const.twoclass.unpaired.response){
 
 # parse and summarize, if timecourse data
 
+sd.internal=NULL
+
 if(resp.type==samr.const.twoclass.unpaired.timecourse.response | 
  resp.type==samr.const.twoclass.paired.timecourse.response |
 resp.type==samr.const.oneclass.timecourse.response){
     junk=parse.time.labels.and.summarize.data(x,y, resp.type, time.summary.type)
        y=junk$y;
        x=junk$x;
+       sd.internal=sqrt(rowMeans(junk$sd^2))
+if(min(table(y))==1){
+  cat("",fill=T)
+  cat("Warning: only one timecourse in one or more classes;
+  SAM plot and FDRs will be unreliable; only gene scores are informative",fill=T)
   }
+}
 
 # if the data is timecourse, we have already summarized the time aspect.
 # Thus we change the resp.type to the appropriate non-time-course type. Note that the original value
@@ -185,18 +195,18 @@ if(resp.type==samr.const.quantitative.response & regression.method=="ranks")
 
 # initial computation to get sd
 
-     if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="standard"){junk <- ttest.func(x,y);numer <- junk$numer;sd <- junk$sd}
 
- if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"){junk <- wilcoxon.func(x,y);numer <- junk$numer;sd <- junk$sd}
+     if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="standard"){init.fit <- ttest.func(x,y, sd=sd.internal);numer <- init.fit$numer;sd <- init.fit$sd}
 
-     if(resp.type==samr.const.oneclass.response){junk <- onesample.ttest.func(x,y);numer <- junk$numer;sd <- junk$sd}
-     if(resp.type==samr.const.twoclass.paired.response){junk <- paired.ttest.func(x,y); numer <- junk$numer ; sd <- junk$sd}
+ if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"){init.fit <- wilcoxon.func(x,y);numer <- init.fit$numer;sd <- init.fit$sd}
 
-     if(resp.type==samr.const.survival.response){junk <- cox.func(x,y,censoring.status);numer <- junk$numer;sd <- junk$sd}
-     if(resp.type==samr.const.multiclass.response){junk <- multiclass.func(x,y); numer <- junk$numer;sd <- junk$sd}
-     if(resp.type==samr.const.quantitative.response){junk <- quantitative.func(x,y);numer <- junk$numer;sd <- junk$sd}
- if(resp.type==samr.const.patterndiscovery.response){junk <- patterndiscovery.func(x);numer <- junk$numer;sd <- junk$sd}
+     if(resp.type==samr.const.oneclass.response){init.fit <- onesample.ttest.func(x,y, sd=sd.internal);numer <- init.fit$numer;sd <- init.fit$sd}
+     if(resp.type==samr.const.twoclass.paired.response){init.fit <- paired.ttest.func(x,y, sd=sd.internal); numer <- init.fit$numer ; sd <- init.fit$sd}
 
+     if(resp.type==samr.const.survival.response){init.fit <- cox.func(x,y,censoring.status);numer <- init.fit$numer;sd <- init.fit$sd}
+     if(resp.type==samr.const.multiclass.response){init.fit <- multiclass.func(x,y); numer <- init.fit$numer;sd <- init.fit$sd}
+     if(resp.type==samr.const.quantitative.response){init.fit <- quantitative.func(x,y);numer <- init.fit$numer;sd <- init.fit$sd}
+ if(resp.type==samr.const.patterndiscovery.response){init.fit <- patterndiscovery.func(x);numer <- init.fit$numer;sd <- init.fit$sd}
 
 
 
@@ -222,11 +232,11 @@ if((s0.perc != -1 & s0.perc < 0) | s0.perc > 100){
 to (-1) (meaning that s0 should be set to zero)")
        }
            if(s0.perc== -1){s0=0}
-            if(s0.perc>=0) {s0 <- quantile(junk$sd,s0.perc/100)}
+            if(s0.perc>=0) {s0 <- quantile(init.fit$sd,s0.perc/100)}
           }
      if(is.null(s0.perc)){   
-      s0=est.s0(junk$tt,junk$sd)$s0.hat
-      s0.perc=100*sum(junk$sd<s0)/length(junk$sd)
+      s0=est.s0(init.fit$tt,init.fit$sd)$s0.hat
+      s0.perc=100*sum(init.fit$sd<s0)/length(init.fit$sd)
   }
    }
  
@@ -234,10 +244,10 @@ to (-1) (meaning that s0 should be set to zero)")
 # compute test statistics on original data
 
 
-  if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="standard"){tt <- ttest.func(x,y,s0=s0)$tt}
+  if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="standard"){tt <- ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
   if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"){tt <- wilcoxon.func(x,y,s0=s0)$tt}
-  if(resp.type==samr.const.oneclass.response){tt <- onesample.ttest.func(x,y,s0=s0)$tt}
-  if(resp.type==samr.const.twoclass.paired.response){tt <- paired.ttest.func(x,y,s0=s0)$tt}
+  if(resp.type==samr.const.oneclass.response){tt <- onesample.ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
+  if(resp.type==samr.const.twoclass.paired.response){tt <- paired.ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
   if(resp.type==samr.const.survival.response){tt <- cox.func(x,y,censoring.status,s0=s0)$tt}
   if(resp.type==samr.const.multiclass.response){
    junk2 <- multiclass.func(x,y,s0=s0)
@@ -274,17 +284,20 @@ if(resp.type==samr.const.twoclass.unpaired.response){
 
   
 if(resp.type==samr.const.oneclass.response){
-
-  allii= 0:((2^length(y))-1)
-    nperms.act=2^length(y)
+ if((length(y)*log(2))<log(nperms)){
+   allii= 0:((2^length(y))-1)
+   nperms.act=2^length(y)
     all.perms.flag=1
-    if((2^length(y))>nperms){
-       allii=sample(allii,size=nperms)
-       nperms.act=nperms
-       all.perms.flag=0
+   } 
+    
+  else{
+    nperms.act=nperms
+    all.perms.flag=0
     }
        
      permsy=matrix(NA,nrow=nperms.act,ncol=length(y))
+  
+  if(all.perms.flag==1){
      k=0 
      for(i in  allii ){
        junk=integer.base.b(i,b=2)
@@ -294,7 +307,15 @@ if(resp.type==samr.const.oneclass.response){
        k=k+1
        permsy[k,]=y*(2*junk-1)
      }
-  }
+   }
+  
+  else{
+    for(i in 1:nperms.act){
+      permsy[i,]=sample(c(-1,1),size=length(y),replace=TRUE)
+    }
+   }
+  
+}
 
 
 
@@ -326,10 +347,10 @@ censoring.status.star.keep <-  matrix(0,ncol=nperms.act,nrow=length(y))}
 
   foldchange.star=NULL
 
-  if( resp.type==samr.const.twoclass.unpaired.response | resp.type==samr.const.twoclass.paired.response) {foldchange.star <- matrix(0,nrow=nrow(x),ncol=nperms)}
+  if( resp.type==samr.const.twoclass.unpaired.response | resp.type==samr.const.twoclass.paired.response) {foldchange.star <- matrix(0,nrow=nrow(x),ncol=nperms.act)}
 
 if(resp.type==samr.const.multiclass.response){
-stand.contrasts.star=array(NA,c(nrow(x),length(table(y)),nperms))
+stand.contrasts.star=array(NA,c(nrow(x),length(table(y)),nperms.act))
 }
 
   # end of if(xltime=="regular" etc
@@ -346,6 +367,7 @@ if(xl.mode=="next20" |  xl.mode=="lasttime"){
 eigengene=xl.prevfit$eigengene
 eigengene.number=xl.prevfit$eigengene.number
  sd=xl.prevfit$sd- xl.prevfit$s0
+sd.internal=xl.prevfit$sd.internal
  ttstar= xl.prevfit$ttstar
  ttstar0= xl.prevfit$ttstar0
  n= xl.prevfit$n 
@@ -396,14 +418,13 @@ if(xl.mode=="regular"){
 
 
   for(b in first:last){
-
     cat(c("perm=",b),fill=TRUE)
     xstar <- x
 
 
     if(resp.type==samr.const.oneclass.response){
          ystar=permsy[b,]
-         ttstar[,b] <- onesample.ttest.func(xstar,ystar,s0=s0)$tt
+         ttstar[,b] <- onesample.ttest.func(xstar,ystar,s0=s0, sd=sd.internal)$tt
 
     }
 
@@ -412,7 +433,7 @@ if(xl.mode=="regular"){
 
     if(resp.type==samr.const.twoclass.paired.response){
       ystar=permsy[b,]
-      ttstar[,b] <- paired.ttest.func(xstar,ystar,s0=s0)$tt
+      ttstar[,b] <- paired.ttest.func(xstar,ystar,s0=s0, sd=sd.internal)$tt
       foldchange.star[,b]=foldchange.paired(xstar,ystar,data$logged2)
 }
 
@@ -423,7 +444,7 @@ if(xl.mode=="regular"){
        ystar=permsy[b,]
        
 if(testStatistic=="standard"){
-      junk <- ttest.func(xstar,ystar,s0=s0)
+      junk <- ttest.func(xstar,ystar,s0=s0, sd=sd.internal)
 }
 if(testStatistic=="wilcoxon"){
       junk <- wilcoxon.func(xstar,ystar,s0=s0)
@@ -520,10 +541,17 @@ if(resp.type==samr.const.multiclass.response){
 
   foldchange=NULL
 
+    if(resp.type==samr.const.twoclass.unpaired.response){
+ foldchange=foldchange.twoclass(x,y,data$logged2)
+}
 
-    if(resp.type==samr.const.twoclass.unpaired.response){ foldchange=foldchange.twoclass(x,y,data$logged2)}
+    if(resp.type==samr.const.twoclass.paired.response){
+ foldchange=foldchange.paired(x,y,data$logged2)
+}
 
-    if(resp.type==samr.const.twoclass.paired.response){ foldchange=foldchange.paired(x,y,data$logged2)}
+    if(resp.type==samr.const.oneclass.response){
+}
+
 
 
   
@@ -552,6 +580,7 @@ nperms.act=nperms.act,
 tt=tt,
 numer=numer,
 sd=sd+s0,
+sd.internal=sd.internal,
 s0=s0,
 s0.perc=s0.perc,
 evo=evo,

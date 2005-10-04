@@ -1,41 +1,8 @@
-samr			           A function to do SAM
-samr.compute.delta.table           A function to blah blah
-samr.compute.siggenes.table        A function to blah blah
-samr.plot           A function to blah blah
-samr.missrate           A function to blah blah
-samr.detec.slab           A function to blah blah
-ttest.func           A function to blah blah
-onesample.ttest.func           A function to blah blah
-paired.ttest.func           A function to blah blah
-cox.func           A function to blah blah
-fisher.func           A function to blah blah
-quantitative.func           A function to blah blah
-timearea.func           A function to blah blah
-f55           A function to blah blah
-detec.horiz           A function to blah blah
-stand           A function to blah blah
-localfdr           A function to blah blah
-predict.localfdr           A function to blah blah
-qvalue.func           A function to blah blah
-foldchange.twoclass           A function to blah blah
-foldchange.paired           A function to blah blah
-est.s0           A function to blah blah
-coxscor           A function to blah blah
-coxvar           A function to blah blah
-coxstuff           A function to blah blah
-samr.missrate           A function to blah blah
-varr           A function to blah blah
-samr.const.red.color           A function to blah blah
-samr.const.green.color           A function to blah blah
-samr.const.black.color           A function to blah blah
-samr.const.quantitative.response           A function to blah blah
-samr.const.twoclass.unpaired.response           A function to blah blah
-samr.const.survival.response           A function to blah blah
-samr.const.multiclass.response           A function to blah blah
-samr.const.oneclass.response           A function to blah blah
-samr.const.twoclass.paired.response           A function to blah blah
-samr.const.timearea.response           A function to blah blah
-samr.xl.build.data           A function to blah blah
-samr.xl.compute.plot.xy        A function to blah blah
-
-
+samr                    Significance analysis of microarrays
+samr.compute.delta.table
+                        Compute delta table for SAM analysis
+samr.compute.siggenes.table
+                        Compute significant genes table
+samr.missrate           Estimate the miss rate table for a SAM
+                        analysis
+samr.plot               Make Q-Q plot for SAM analysis

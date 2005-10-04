@@ -1,6 +1,9 @@
 samr.options <- list(debug=TRUE, #whether to turn on debugging or not
-                    err.file=ifelse(.Platform$OS.type=="windows", "C:/samrtrace.txt", "samrtrace.txt"),
-                    image.file=ifelse(.Platform$OS.type=="windows", "C:/samrimage.Rdata", "samrimage.Rdata"))
+                    err.file=ifelse(.Platform$OS.type=="windows", "C:/samrtrace.txt", "C:/samrtrace.txt"),
+
+                     image.file=ifelse(.Platform$OS.type=="windows", "C:/samrimage.Rdata","samrimage.Rdata")
+
+                     )
 
 
 ##
@@ -228,3 +231,12 @@ if(nchar(y)<10){
 
 return(eigengene.number)
 }
+
+samr.xl.impute.data<-
+function (data.obj) 
+{
+    require(impute)
+    data.obj$x = impute.knn(data.obj$x, k = samr.xl.var.knn.neighbors)
+    data.obj
+}
+

@@ -21,7 +21,7 @@ samr.const.black.color <- 1
 
 
 samr <- function(data,  resp.type=c("Quantitative","Two class unpaired","Survival","Multiclass","One class", "Two class paired","Two class unpaired timecourse",
-"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10, random.seed=NULL,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL){
+"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10, random.seed=NULL, xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL){
 
 
 ##SAM method. copyright june 2000: Goss, Tibshirani and Chu.
@@ -61,6 +61,7 @@ samr <- function(data,  resp.type=c("Quantitative","Two class unpaired","Surviva
   this.call=match.call()  
  resp.type.arg=match.arg(resp.type)
 
+
 xl.mode=match.arg(xl.mode)
 
 if(!is.null(random.seed)){
@@ -91,6 +92,7 @@ perms=NULL
 permsy=NULL
 eigengene=NULL
 eigengene.number=NULL
+
 ##
 
 
@@ -109,6 +111,7 @@ eigengene.number=data$eigengene.number
 if(sum(is.na(x))>0){
 require(impute)
 x=impute.knn(x,k=knn.neighbors)
+if(!is.matrix(x)){x=x$data}
 }
   
 are.blocks.specified=FALSE
@@ -119,6 +122,9 @@ are.blocks.specified=FALSE
 if(center.arrays){
  x<-scale(x,center=apply(x,2,median),scale=FALSE)
 }
+
+
+
 
 
 # check if there are blocks for 2 class unpaired case
@@ -200,6 +206,10 @@ if(resp.type==samr.const.quantitative.response & regression.method=="ranks")
 
  if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"){init.fit <- wilcoxon.func(x,y);numer <- init.fit$numer;sd <- init.fit$sd}
 
+
+
+
+
      if(resp.type==samr.const.oneclass.response){init.fit <- onesample.ttest.func(x,y, sd=sd.internal);numer <- init.fit$numer;sd <- init.fit$sd}
      if(resp.type==samr.const.twoclass.paired.response){init.fit <- paired.ttest.func(x,y, sd=sd.internal); numer <- init.fit$numer ; sd <- init.fit$sd}
 
@@ -210,15 +220,15 @@ if(resp.type==samr.const.quantitative.response & regression.method=="ranks")
 
 
 
-# for wilcoxon or rank regression or patterndiscovery, we set s0 to the 5th percentile of the sd values (automatic
+# for wilcoxon or rank regression or patterndiscovery , we set s0 to the 5th percentile of the sd values (automatic
 # estimation is not possible as the values of sd are too coarse)
 
 # also if dataset is small (< 500 genes), we don't attempt automatic
 # estimation of s0
 
 
-if((resp.type==samr.const.quantitative.response & (testStatistic=="wilcoxon" | regression.method=="ranks")) | resp.type==samr.const.patterndiscovery.response |
-resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"|
+if( (resp.type==samr.const.quantitative.response & (testStatistic=="wilcoxon" | regression.method=="ranks" ) | resp.type==samr.const.patterndiscovery.response) |
+resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon" | 
 nrow(x)<500)
 {s0=quantile(sd,.05); s0.perc= 0.05}
 
@@ -239,14 +249,17 @@ to (-1) (meaning that s0 should be set to zero)")
       s0.perc=100*sum(init.fit$sd<s0)/length(init.fit$sd)
   }
    }
- 
+
 
 # compute test statistics on original data
 
 
   if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="standard"){tt <- ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
   if(resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon"){tt <- wilcoxon.func(x,y,s0=s0)$tt}
-  if(resp.type==samr.const.oneclass.response){tt <- onesample.ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
+ 
+
+
+  if(resp.type==samr.const.oneclass.response ){tt <- onesample.ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
   if(resp.type==samr.const.twoclass.paired.response){tt <- paired.ttest.func(x,y,s0=s0, sd=sd.internal)$tt}
   if(resp.type==samr.const.survival.response){tt <- cox.func(x,y,censoring.status,s0=s0)$tt}
   if(resp.type==samr.const.multiclass.response){
@@ -262,6 +275,7 @@ to (-1) (meaning that s0 should be set to zero)")
   tt<- junk$tt;
   eigengene=junk$eigengene
   }
+
 
 # construct matrix of permutations 
 
@@ -357,6 +371,7 @@ stand.contrasts.star=array(NA,c(nrow(x),length(table(y)),nperms.act))
 }
 
  
+
 if(xl.mode=="next20" |  xl.mode=="lasttime"){
 
   # get stuff from prevfit
@@ -371,6 +386,7 @@ sd.internal=xl.prevfit$sd.internal
  ttstar= xl.prevfit$ttstar
  ttstar0= xl.prevfit$ttstar0
  n= xl.prevfit$n 
+
 pi0= xl.prevfit$pi0 
 foldchange= xl.prevfit$foldchange 
  y= xl.prevfit$y
@@ -424,7 +440,12 @@ if(xl.mode=="regular"){
 
     if(resp.type==samr.const.oneclass.response){
          ystar=permsy[b,]
-         ttstar[,b] <- onesample.ttest.func(xstar,ystar,s0=s0, sd=sd.internal)$tt
+
+            if(testStatistic=="standard"){
+                 ttstar[,b] <- onesample.ttest.func(xstar,ystar,s0=s0, sd=sd.internal)$tt
+            }
+        
+
 
     }
 
@@ -443,19 +464,20 @@ if(xl.mode=="regular"){
     if(resp.type==samr.const.twoclass.unpaired.response){
        ystar=permsy[b,]
        
-if(testStatistic=="standard"){
-      junk <- ttest.func(xstar,ystar,s0=s0, sd=sd.internal)
-}
-if(testStatistic=="wilcoxon"){
-      junk <- wilcoxon.func(xstar,ystar,s0=s0)
-}
-
+       if(testStatistic=="standard"){
+        junk <- ttest.func(xstar,ystar,s0=s0, sd=sd.internal)
+      }
+      if(testStatistic=="wilcoxon"){
+            junk <- wilcoxon.func(xstar,ystar,s0=s0)
+      }
+     
 
       ttstar[,b] <- junk$tt
       sdstar.keep[,b] <- junk$sd
       foldchange.star[,b]=foldchange.twoclass(xstar,ystar,data$logged2)
 
     }
+
 
 
 
@@ -496,7 +518,6 @@ if(testStatistic=="wilcoxon"){
 }
 
 
-
 # sort columns of statistics from permuted samples, and compute expected order statistics
 
   
@@ -522,9 +543,15 @@ if(xl.mode=="regular" | xl.mode=="lasttime"){
 # estimation of pi0= prop of null genes
 
   
+pi0=1
+
+
+
+
 if(resp.type!=samr.const.multiclass.response){
   qq<-quantile(ttstar,c(.25,.75))
 }
+
 
 if(resp.type==samr.const.multiclass.response){
   qq<-quantile(ttstar,c(0,.50))
@@ -535,21 +562,22 @@ if(resp.type==samr.const.multiclass.response){
 
 
 
+
  # compute fold changes, when applicable
 
   
 
   foldchange=NULL
 
-    if(resp.type==samr.const.twoclass.unpaired.response){
+    if(resp.type==samr.const.twoclass.unpaired.response ) {
  foldchange=foldchange.twoclass(x,y,data$logged2)
 }
 
-    if(resp.type==samr.const.twoclass.paired.response){
+    if(resp.type==samr.const.twoclass.paired.response ){
  foldchange=foldchange.paired(x,y,data$logged2)
 }
 
-    if(resp.type==samr.const.oneclass.response){
+    if(resp.type==samr.const.oneclass.response ){
 }
 
 

@@ -156,9 +156,9 @@ samr.xl.parse.survival= function(y){
 remove.leading.spaces=function(x){
 xx=x
 n=nchar(x)
-if(substring(x,1,1,)==" "){
+if(substring(x,1,1)==" "){
 j=1
-while(substring(x,j,j,)==" "){j=j+1}
+while(substring(x,j,j)==" "){j=j+1}
 xx=substring(x,j,n)
 }
 return(xx)
@@ -167,9 +167,9 @@ return(xx)
 remove.trailing.spaces=function(x){
 xx=x
 n=nchar(x)
-if(substring(x,n,n,)==" "){
+if(substring(x,n,n)==" "){
 j=n
-while(substring(x,j,j,)==" "){j=j-1}
+while(substring(x,j,j)==" "){j=j-1}
 xx=substring(x,1,j)
 }
 return(xx)

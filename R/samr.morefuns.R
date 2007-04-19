@@ -68,9 +68,8 @@ tt= (numer)/(sd + s0)
 
 
 
-
 onesample.ttest.func <- function(x,y,s0=0, sd=NULL){
-  n <- length(y)
+ n <- length(y)
   x <- x*matrix(y,nrow=nrow(x),ncol=ncol(x),byrow=TRUE)
   m <- rowMeans(x)
  if(is.null(sd)){ sd <- sqrt( varr(x, meanx=m)/n)}
@@ -101,6 +100,7 @@ dimnames(eigengene)=list(NULL,c("sample number","value"))
 
 
 paired.ttest.func <- function(x,y,s0=0, sd=NULL){
+ 
   nc <- ncol(x)/2
   o <- 1:nc
   o1 <- rep(0,ncol(x)/2);o2 <- o1
@@ -116,8 +116,11 @@ paired.ttest.func <- function(x,y,s0=0, sd=NULL){
     if(is.matrix(d)){ sd <- sqrt(varr(d, meanx=m)/nc)}
     if(!is.matrix(d)){sd <- sqrt(var(d)/nc)}
   }
+
+
   dif.obs <- m/(sd+s0)
   return(list(tt=dif.obs, numer=m, sd=sd))
+
 
 }
 
@@ -265,8 +268,6 @@ detec.slab <- function(samr.obj, del, min.foldchange) {
     plow <- (1:n)[o222 & foldchange.cond.lo]
   }
 
-
-  
 
   return(list(plow=plow, pup=pup))
 
@@ -623,7 +624,7 @@ if(length(sig$pup)>0 | length(sig$plo)>0){
   res.lo=NULL
 
   done=FALSE
-     # two class unpaired or paired (folchange is reported) 
+ # two class unpaired or paired  (foldchange is reported) 
 
   if((samr.obj$resp.type==samr.const.twoclass.unpaired.response | samr.obj$resp.type==samr.const.twoclass.paired.response) ){
 
@@ -653,6 +654,11 @@ if(compute.localfdr){temp.names[[2]]=c(temp.names[[2]], "localfdr(%)")}
 
     done=TRUE
   }
+
+
+
+
+
 
 # multiclass
   if(samr.obj$resp.type==samr.const.multiclass.response){
@@ -954,10 +960,6 @@ coxscor <- function(x, y, ic, offset = rep(0., length(y))) {
 
 
 
-
-
-
-
 coxvar <- function(x, y, ic, offset = rep(0., length(y)), coxstuff.obj = NULL){
 
   ## computes information elements (var) for cox
@@ -1122,9 +1124,6 @@ varr <- function(x, meanx=NULL){
   return(ans)
 
 }
-
-
-
 
 
 
@@ -1656,8 +1655,8 @@ if(samr.obj$resp.type==samr.const.oneclass.response | samr.obj$resp.type==samr.c
 }
 
 # we only use the  20 of the perms, for speed
-nperms=min(20,samr.obj$nperms)
-perms.to.use=sample(1:samr.obj$nperms,size=nperms)
+nperms=min(20,samr.obj$nperms.act)
+perms.to.use=sample(1:samr.obj$nperms.act,size=nperms)
 
 #note: here I permute within each col of zstar, so that the
 # genes that are  modified are different for each permutation
@@ -1758,5 +1757,54 @@ title(paste("Results for mean difference=",round(samr.assess.samplesize.obj$dif.
 if(call.win.metafile){dev.off()}
 
   return()
+}
+
+samr.pvalues.from.perms=function(tt,ttstar){
+r=rank(c(abs(tt),abs(as.vector(ttstar))))[1:length(tt)]
+r2=rank(c(abs(tt)))
+r3=r-r2
+pv=(length(tt)-r3/ncol(ttstar)+1)/length(tt)
+return(pv)
+}
+
+
+samr.tail.strength=function(samr.obj){
+tt=samr.obj$tt
+ttstar=samr.obj$ttstar0
+pv=samr.pvalues.from.perms(tt,ttstar)
+m=length(pv)
+pvs=sort(pv)
+ts=(1/m)*sum( (1-pvs*(m+1)/(1:m)))
+
+res=NULL
+nperms=min(ncol(ttstar),20)
+ttstar.temp=ttstar[,1:nperms]
+for(i in 1:nperms){
+cat(i,fill=T)
+ pvstar=samr.pvalues.from.perms(ttstar.temp[,i],ttstar.temp[,-i])
+ pvstar=sort(pvstar)
+ tsstar=(1/m)*sum( (1-pvstar*(m+1)/(1:m)))
+ res=c(res,tsstar)
+} 
+
+se.ts.perm=sqrt(var(res))
+return(list(ts=ts,se.ts=se.ts.perm))
+}   
+
+quant <- function(x){
+#dyn.load("/home/tibs/PAPERS/copa/quant.so")
+p=as.integer(nrow(x))
+n=as.integer(ncol(x))
+xx=t(x)
+storage.mode(xx)="single"
+junk=.Fortran("quant",
+as.matrix(xx),
+n,
+p,
+integer(n),
+out=single(2*p),
+PACKAGE="samr"
+)
+return(matrix(junk$out,ncol=2))
 }
 

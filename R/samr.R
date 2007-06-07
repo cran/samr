@@ -229,25 +229,27 @@ if(resp.type==samr.const.quantitative.response & regression.method=="ranks")
 
 if( (resp.type==samr.const.quantitative.response & (testStatistic=="wilcoxon" | regression.method=="ranks" ) | resp.type==samr.const.patterndiscovery.response) |
 resp.type==samr.const.twoclass.unpaired.response & testStatistic=="wilcoxon" | 
-nrow(x)<500)
+(nrow(x)<500) & is.null(s0) & is.null(s0.perc))
 {s0=quantile(sd,.05); s0.perc= 0.05}
 
 
 # estimate s0 if necessary
 
   if(is.null(s0)){
+    
      if(!is.null(s0.perc)){
-if((s0.perc != -1 & s0.perc < 0) | s0.perc > 100){
+       if((s0.perc != -1 & s0.perc < 0) | s0.perc > 100){
        stop("Illegal value for s0.perc: must be between 0 and 100, or equal
 to (-1) (meaning that s0 should be set to zero)")
        }
            if(s0.perc== -1){s0=0}
             if(s0.perc>=0) {s0 <- quantile(init.fit$sd,s0.perc/100)}
-          }
+       }
+     
      if(is.null(s0.perc)){   
       s0=est.s0(init.fit$tt,init.fit$sd)$s0.hat
       s0.perc=100*sum(init.fit$sd<s0)/length(init.fit$sd)
-  }
+     }
    }
 
 

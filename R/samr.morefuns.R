@@ -838,11 +838,13 @@ else{qv222=qv2}
 
 foldchange.twoclass=function(x,y, logged2){
 
-  if(logged2){x=2^x}
+#  if(logged2){x=2^x}
 
   m1 <- rowMeans(x[,y==1,drop=F])
   m2 <- rowMeans(x[,y==2,drop=F])
-  return(m2/m1)
+ if(!logged2) {fc=m2/m1}
+  if(logged2){fc=2^{m2-m1}}
+  return(fc)
 
 }
 
@@ -854,7 +856,7 @@ foldchange.twoclass=function(x,y, logged2){
 
 foldchange.paired=function(x,y,logged2){
 
-  if(logged2){x=2^x}
+#  if(logged2){x=2^x}
 
   nc <- ncol(x)/2
   o <- 1:nc
@@ -863,11 +865,13 @@ foldchange.paired=function(x,y,logged2){
   for(j in 1:nc){o2[j] <- (1:ncol(x))[y==o[j]]}
 
 
-  d <- x[,o2,drop=F]/x[,o1, drop=F]
+ if(!logged2){  d <- x[,o2,drop=F]/x[,o1, drop=F]}
+ if(logged2){  d <- x[,o2,drop=F]-x[,o1, drop=F]}
 
-  m <- rowMeans(d)
+  if(!logged2){ fc <- rowMeans(d)}
+  if(logged2){ fc <- 2^rowMeans(d)}
 
-  return(m)
+  return(fc)
 
 }
 

@@ -3,7 +3,7 @@
 \title{Estimate the  miss rate table for a SAM analysis}
 \description{
 Estimates the  miss rate table, showing the local false negative rate, for a SAM
-analysis}
+analysis
 }
 \usage{
 samr.missrate(samr.obj, del, delta.table, quant=NULL)

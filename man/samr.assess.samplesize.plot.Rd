@@ -22,7 +22,6 @@ http://www-stat.stanford.edu/~tibs/sam
 Plots results: FDR (or 1-power) and FNR (or 1-type 1 error) from samr.assess.samplesize}
 
 
-\value{}
 
 \author{Balasubrimanian Narasimhan and Robert Tibshirani}
 

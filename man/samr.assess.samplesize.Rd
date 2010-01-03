@@ -5,7 +5,7 @@
 Estimate the false discovery rate, 
 false negative rate, power and type I error for a SAM
 analysis. Currently
-implemented only for two class (unpaired or paired), one-sample and survival problems). }
+implemented only for two class (unpaired or paired), one-sample and survival problems). 
 }
 \usage{
 samr.assess.samplesize(samr.obj, data, dif, samplesize.factors=c(1,2,3,5), min.genes = 10, max.genes = nrow(data$x)/2)

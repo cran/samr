@@ -10,7 +10,7 @@ samr(data,  resp.type=c("Quantitative","Two class unpaired","Survival","Multicla
 "One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10, random.seed=NULL,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL)
 }
 \arguments{
-  \item{data}{ Data object with components x- p by n matrix of features,
+  \item{data}{Data object with components x- p by n matrix of features,
 one observation per column (missing values allowed); y- n-vector of outcome measurements;
 censoring.status- n-vector of censoring censoring.status (1= died or event occurred, 0=survived, or event was censored), needed
 for a censored survival outcome}
@@ -28,7 +28,7 @@ at the outset? Default =FALSE},
 \item{testStatistic}{Test statistic to use in two class unpaired case.Either
 "standard" (t-statistic) or ,"wilcoxon" (Two-sample wilcoxon or Mann-Whitney
 test) } 
-\item{time.summary.type}{ Summary measure for each time course: "slope", or "signed.area"),} 
+\item{time.summary.type}{Summary measure for each time course: "slope", or "signed.area"),} 
 \item{regression.method}{Regression method for quantitative case:
 "standard", (linear least squares) or "ranks" (linear least squares 
 on ranked data)}
@@ -55,12 +55,12 @@ at http://www-stat.stanford.edu/~tibs/SAM}
 
 \value{
 A list with components
-\item{n}{Number of observations},
+\item{n}{Number of observations}
 \item{x}{Data matrix p by n (p=\# genes or features). Equal to the  matrix data\$x  in the original call to samr except
 for (1) time course analysis, where is contains the summarized data
 or (2) quantitative outcome with rank regression, where it contains
 the data transformed to ranks. Hence it is null except for in time course analysis. }
-\item{y} {Vector of n outcome values. equal the values data\$y in the original call to samr, except
+\item{y}{Vector of n outcome values. equal the values data\$y in the original call to samr, except
 for (1) time course analysis, where is contains the summarized y 
 or (2) quantitative outcome with rank regression, where it contains
 the y values transformed to ranks}
@@ -71,7 +71,7 @@ the y values transformed to ranks}
 \item{nperms.act}{Number of permutations actually used. Will be <
 nperms when \# of possible permutations  <= nperms (in which case
 all permutations are done)}
-\item{tt}{ tt=numer/sd, the  vector of p test statistics for original data}
+\item{tt}{tt=numer/sd, the  vector of p test statistics for original data}
 \item{numer}{Numerators for tt}
 \item{sd}{Denominators for tt. Equal to standard deviation for feature plus s0}
 \item{s0}{Computed  exchangeability factor}
@@ -82,7 +82,7 @@ s0= s0.perc percentile of the gene standard deviations}
 a permutation of 1,2...n}
 \item{permsy}{nperms.act by n matrix  of permutations used. Each row is
 a permutation of y1,y2,...yn. Only one of perms or permys is non-Null, depending on resp.type} 
-\item{all.perms.flag}{ Were all possible permutations used?}
+\item{all.perms.flag}{Were all possible permutations used?}
 \item{ttstar}{p by nperms.aca matrix t of test statistics from permuted data. Each column if sorted in descending order}
 \item{ttstar0}{p by nperms.act matrix  of test statistics from permuted data. Columns are in order of data}
 \item{eigengene.number}{The number of the eigengene (eg 1,2,..) that was requested for Pattern discovery}

@@ -2,7 +2,7 @@
 \alias{samr.pvalues.from.perms}
 \title{Report estimated p-values for each gene, from a  SAM analysis}
 \description{Report estimated p-values for each gene, from set of
-permutations in a SAM analysis}
+permutations in a SAM analysis
 }
 \usage{
 samr.pvalues.from.perms(tt, ttstar)

@@ -1,7 +1,7 @@
 \name{samr.tail.strength}
 \alias{samr.tail.strength}
 \title{Estimate tail strength for a dataset, from a SAM analysis}
-\description{Estimate tail strength for a dataset, from a SAM analysis}
+\description{Estimate tail strength for a dataset, from a SAM analysis
 }
 \usage{
 samr.tail.strength(samr.obj)

@@ -20,7 +20,7 @@ default is zero, meaning no fold change criterion is applied}
 \details{Creates the Q-Q plot fro a SAm analysis, marking features (genes)
 that are significant, ie. lie outside a slab around teh 45 degreee line of
 width delta. A gene must also pass the  min.foldchange criterion 
-to be called significant, if this criterion is specified in the call.}
+to be called significant, if this criterion is specified in the call.
 }
 
 \references{Tusher, V.,  Tibshirani, R.  and Chu, G. (2001): 

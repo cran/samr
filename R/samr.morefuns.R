@@ -594,6 +594,9 @@ samr.compute.siggenes.table=function(samr.obj,del, data, delta.table,  min.foldc
   ##  for a  **single** value del
   ## if all.genes is true, all genes are printed (and value of del is ignored)
 
+if(is.null(data$geneid)){data$geneid=paste("g",1:nrow(data$x),sep="")}
+if(is.null(data$genenames)){data$genenames=paste("g",1:nrow(data$x),sep="")}
+
 
   if(!all.genes){
     sig=detec.slab(samr.obj, del, min.foldchange)

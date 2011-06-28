@@ -8,7 +8,8 @@ analysis. Currently
 implemented only for two class (unpaired or paired), one-sample and survival problems). 
 }
 \usage{
-samr.assess.samplesize(samr.obj, data, dif, samplesize.factors=c(1,2,3,5), min.genes = 10, max.genes = nrow(data$x)/2)
+samr.assess.samplesize(samr.obj, data, dif, samplesize.factors=c(1,2,3,5), 
+min.genes = 10, max.genes = nrow(data$x)/2)
 }
 \arguments{
 \item{samr.obj}{ Object returned from call to samr}
@@ -61,7 +62,7 @@ differentially expressed vs unexpressed}
 \item{samplesize.factor}{The  samplesize.factor that was passed to  samr.assess.samplesiz}
 \item{n}{Number of samples in input data (i.e. ncol of x component in data)}
 }
-\author{Balasubrimanian Narasimhan and Robert Tibshirani}
+\author{Jun Li and Balasubrimanian Narasimhan and Robert Tibshirani}
 
 
 \examples{
@@ -75,7 +76,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 
 y<-c(rep(1,10),rep(2,10))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 log2=function(x){log(x)/log(2)}
 

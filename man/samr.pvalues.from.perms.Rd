@@ -17,7 +17,7 @@ A tail strength measure for assessing the overall significance in a dataset.
 Submitted.
 }
 
-\author{Balasubrimanian Narasimhan and Robert Tibshirani}
+\author{Jun Li and Balasubrimanian Narasimhan and Robert Tibshirani}
 
 
 \examples{
@@ -31,7 +31,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 
 y<-c(rep(1,10),rep(2,10))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 samr.obj<-samr(data,  resp.type="Two class unpaired", nperms=100)
 
 pv=samr.pvalues.from.perms(samr.obj$tt, samr.obj$ttstar)

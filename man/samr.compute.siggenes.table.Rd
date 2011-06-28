@@ -5,7 +5,8 @@
  Computes significant genes table, starting with samr object "samr.obj" and  delta.table "delta.table"
 }
 \usage{
-samr.compute.siggenes.table(samr.obj, del, data, delta.table,  min.foldchange=0, all.genes=FALSE, compute.localfdr=FALSE)
+samr.compute.siggenes.table(samr.obj, del, data, delta.table, 
+min.foldchange=0, all.genes=FALSE, compute.localfdr=FALSE)
 }
 \arguments{
 \item{samr.obj}{ Object returned from call to samr}
@@ -25,8 +26,11 @@ color.ind.for.multi=color.ind.for.multi,
 ngenes.up=ngenes.up, 
 ngenes.lo=ngenes.lo))
 
-\item{gene.up}{Matrix of significant genes having posative correlation with the outcome},
-\item{gene.lo}{Matrix of significant genes having negative correlation with the outcome},
+\item{genes.up}{Matrix of significant genes having posative correlation with the outcome.
+For survival data, genes.up are those genes having positive correlation with risk-
+ that is, increased expression corresponds to higher risk (shorter survival).}
+\item{genes.lo}{Matrix of significant genes having negative correlation with the outcome.
+For survival data,genes. lo are those whose increased expression corresponds to lower risk (longer survival).}
 \item{color.ind.for.multi}{For multiclass response: a matrix with entries +1
 if the class mean is larger  than the overall mean at the 95% significance
 levels, -1 if less, and zero otehrwise. This is useful in 
@@ -52,7 +56,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 
 y<-c(rep(1,10),rep(2,10))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 
 samr.obj<-samr(data,  resp.type="Two class unpaired", nperms=100)

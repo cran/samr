@@ -14,16 +14,21 @@ samr.compute.delta.table(samr.obj, min.foldchange=0, dels=NULL, nvals=50)
   \item{samr.obj}{ Object returned from call to samr}
  \item{min.foldchange}{The minimum fold change desired; should be >1;
 default is zero, meaning no fold change criterion is applied}
-\item{dels}{vector of delat valeus used. By default,  50 values
-are chosen in the relevant operating chnage for delta.
-Delta is vertical the distance from the 45 degree line to the upper and lower
+\item{dels}{vector of delta values used. 
+Delta is the vertical distance from the 45 degree line to the upper and lower
 parallel lines that define the SAM threshold rule.
+By default, for array data, 50 values
+are chosen in the relevant operating change for delta.
+For sequencing data, the maximum number of effective delta values
+are chosen automatically according to the data.
 }
 
-\item{nvals}{Number of delta values used}
+\item{nvals}{Number of delta values used. 
+For array data, the default value is 50. For sequencing data,
+the value will be chosen automatically.}
 }
 \details{Returns a table of the FDR and upper and lower cutpoints for various values of
-delta, for a  SAM analysis.
+delta, for a SAM analysis.
 }
 
 \references{Tusher, V.,  Tibshirani, R.  and Chu, G. (2001): 
@@ -43,7 +48,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 
 y<-c(rep(1,10),rep(2,10))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 
 samr.obj<-samr(data,  resp.type="Two class unpaired", nperms=50)

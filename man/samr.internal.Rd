@@ -18,9 +18,6 @@
 \alias{foldchange.twoclass}
 \alias{foldchange.paired}
 \alias{est.s0}
-\alias{coxscor}
-\alias{coxvar}
-\alias{coxstuff}
 \alias{permute}
 \alias{permute.rows}
 \alias{sample.perms}
@@ -50,6 +47,22 @@
 \alias{samr.xl.parse.patterndiscovery}
 \alias{samr.xl.error.trace}
 \alias{samr.xl.impute.data}
+\alias{resample}
+\alias{wilcoxon.unpaired.seq.func}
+\alias{wilcoxon.paired.seq.func}
+\alias{multiclass.seq.func}
+\alias{quantitative.seq.func}
+\alias{cox.seq.func}
+\alias{rankcol}
+\alias{samr.compute.delta.table.seq}
+\alias{samr.seq.null.err}
+\alias{samr.seq.detec.slabs}
+\alias{generate.dels}
+\alias{foldchange.seq.twoclass.paired}
+\alias{foldchange.seq.twoclass.unpaired}
+\alias{samr.compute.delta.table.array}
+\alias{plot.SAMoutput}
+\alias{print.SAMoutput}
 \description{Internal samr functions}
 \usage{
 ttest.func(x, y, s0 = 0, sd=NULL)
@@ -70,9 +83,6 @@ qvalue.func(samr.obj, sig, delta.table)
 foldchange.twoclass(x, y, logged2)
 foldchange.paired(x, y, logged2)
 est.s0(tt, sd, s0.perc = seq(0, 1, by = 0.05))
-coxscor(x, y, ic, offset = rep(0, length(y)))
-coxvar(x, y, ic, offset = rep(0, length(y)), coxstuff.obj = NULL)
-coxstuff(x, y, ic, offset = rep(0, length(y)))
 permute(elem)
 sample.perms(elem, nperms)
 permute.rows(x)
@@ -103,8 +113,24 @@ samr.xl.parse.survival(y)
 samr.xl.parse.patterndiscovery(y)
 samr.xl.error.trace()
 samr.xl.impute.data(data.obj)
+resample(x, d, nresamp=20)
+wilcoxon.unpaired.seq.func(xresamp, y)
+wilcoxon.paired.seq.func(xresamp, y)
+multiclass.seq.func(xresamp, y)
+quantitative.seq.func(xresamp, y)
+cox.seq.func(xresamp, y, censoring.status)
+rankcol(x)
+samr.compute.delta.table.seq(samr.obj, min.foldchange=0, dels=NULL)
+samr.seq.null.err(samr.obj, min.foldchange, cutup, cutlow)
+samr.seq.detec.slabs(samr.obj, dels, min.foldchange)
+generate.dels(samr.obj, min.foldchange=0)
+foldchange.seq.twoclass.paired(x, y, depth)
+foldchange.seq.twoclass.unpaired(x, y, depth)
+samr.compute.delta.table.array(samr.obj, min.foldchange=0, dels=NULL, nvals=50)
+plot.SAMoutput(x, ...)
+print.SAMoutput(x, ...)
 }
-\author{Balasubrimanian Narasimhan and Robert Tibshirani}
+\author{Jun Li and Balasubrimanian Narasimhan and Robert Tibshirani}
 
 \details{
   These are not to be called by the user.

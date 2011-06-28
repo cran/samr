@@ -3,47 +3,72 @@
 \title{Significance analysis of microarrays}
 \description{
 Correlates a large number of features (eg genes) with an outcome
-variable, such as a group indicator, quantitative variable or  survival time
+variable, such as a group indicator, quantitative variable or  survival time.
+NOTE: for most users, the interface function SAM--- which calls samr-- will be more 
+convenient for array data, and the interface function SAMseq-- which also calls samr--
+will be more convenient for sequencing data.
 }
 \usage{
-samr(data,  resp.type=c("Quantitative","Two class unpaired","Survival","Multiclass","One class", "Two class paired","Two class unpaired timecourse",
-"One class timecourse","Two class paired timecourse", "Pattern discovery"), s0=NULL, s0.perc=NULL, nperms=100, center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), time.summary.type=c("slope","signed.area"), regression.method=c("standard","ranks"), return.x=FALSE, knn.neighbors=10, random.seed=NULL,  xl.mode=c("regular","firsttime","next20","lasttime"), xl.time=NULL,  xl.prevfit=NULL)
+samr(data, resp.type=c("Quantitative","Two class unpaired",
+"Survival","Multiclass", "One class", "Two class paired",
+"Two class unpaired timecourse", "One class timecourse",
+"Two class paired timecourse", "Pattern discovery"),
+assay.type=c("array","seq"), s0=NULL, s0.perc=NULL, nperms=100, 
+center.arrays=FALSE, testStatistic=c("standard","wilcoxon"), 
+time.summary.type=c("slope","signed.area"), 
+regression.method=c("standard","ranks"), return.x=FALSE, 
+knn.neighbors=10, random.seed=NULL, nresamp=20,nresamp.perm=NULL, 
+xl.mode=c("regular","firsttime","next20","lasttime"), 
+xl.time=NULL,  xl.prevfit=NULL)
 }
 \arguments{
   \item{data}{Data object with components x- p by n matrix of features,
 one observation per column (missing values allowed); y- n-vector of outcome measurements;
 censoring.status- n-vector of censoring censoring.status (1= died or event occurred, 0=survived, or event was censored), needed
 for a censored survival outcome}
-  \item{resp.type}{Problem type: "quantitative" for a continuous parameter;
-"Two class unpaired" ; "Survival" for censored survival outcome; "Multiclass" :
-more than 2 groups;  "One class" for a single group;  "Two class paired" for two classes with paired observations; "Two class unpaired timecourse", "One class time course",  "Two class.paired timecourse" or "Pattern discovery"}
+  \item{resp.type}{Problem type:
+"Quantitative" for a continuous parameter (Available for both array and sequencing data);
+"Two class unpaired" (for both array and sequencing data); 
+"Survival" for censored survival outcome (for both array and sequencing data); 
+"Multiclass": more than 2 groups (for both array and sequencing data);  
+"One class" for a single group (only for array data); 
+"Two class paired" for two classes with paired observations (for both array and sequencing data);
+"Two class unpaired timecourse" (only for array data), 
+"One class time course" (only for array data),
+"Two class.paired timecourse" (only for array data),
+or "Pattern discovery" (only for array data)}
+\item{assay.type}{Assay type: "array" for microarray data, "seq" for counts from sequencing}
 \item{s0}{Exchangeability factor  for denominator of test statistic; Default
-is automatic choice}
+is automatic choice. Only used for array data.}
 \item{s0.perc}{Percentile of standard  deviation values to use for s0; default is
 automatic choice; -1 means s0=0 (different from s0.perc=0, meaning
-s0=zeroeth percentile of  standard  deviation values= min of sd values}
+s0=zeroeth percentile of  standard  deviation values= min of sd values.
+Only used for array data.}
 \item{nperms}{Number of permutations used to estimate false discovery rates}
 \item{center.arrays}{Should the data for each sample (array) be median centered
-at the outset? Default =FALSE},
+at the outset? Default =FALSE. Only used for array data.},
 \item{testStatistic}{Test statistic to use in two class unpaired case.Either
 "standard" (t-statistic) or ,"wilcoxon" (Two-sample wilcoxon or Mann-Whitney
-test) } 
-\item{time.summary.type}{Summary measure for each time course: "slope", or "signed.area"),} 
+test). Only used for array data.} 
+\item{time.summary.type}{Summary measure for each time course: "slope", or "signed.area"). Only used for array data.} 
 \item{regression.method}{Regression method for quantitative case:
 "standard", (linear least squares) or "ranks" (linear least squares 
-on ranked data)}
+on ranked data). Only used for array data.}
 \item{return.x}{Should the matrix of feature values be returned?
 Only useful for time course data, where x contains summaries of the features
 over time. Otherwise x is the same as the input data data\$x}
 \item{knn.neighbors}{Number of nearest neighbors to use for imputation
-of missing features values}
+of missing features values. Only used for array data.}
 \item{random.seed}{Optional initial seed for random number generator (integer)}
+\item{nresamp}{For assay.type="seq", number of resamples used to construct test statistic. Default 20. Only used for sequencing data.}
+\item{nresamp.perm}{For assay.type="seq", number of resamples used to construct test statistic for permutations. Default is equal to nresamp and it must be at most nresamp. Only used for sequencing data.}
 \item{xl.mode}{Used by Excel interface}
 \item{xl.time}{Used by Excel interface}
 \item{xl.prevfit}{Used by Excel interface}
 }
 
-\details{Carries out a SAM analysis. Applicable to microarray data
+\details{Carries out a SAM analysis. Applicable to microarray data,
+sequencing data,
 and other data with a large number of features. This is the R package
 that is called by the "official" SAM Excel package v2.0.
 The format of the response vector y and the calling sequence
@@ -66,7 +91,7 @@ or (2) quantitative outcome with rank regression, where it contains
 the y values transformed to ranks}
 \item{argy}{The  values data\$y in the original call to samr} 
 \item{censoring.status}{Censoring status indicators if applicable}
-\item{testStatistic}{Test Statistic ised},
+\item{testStatistic}{Test Statistic used},
 \item{nperms}{Number of permutations requested}
 \item{nperms.act}{Number of permutations actually used. Will be <
 nperms when \# of possible permutations  <= nperms (in which case
@@ -89,7 +114,7 @@ a permutation of y1,y2,...yn. Only one of perms or permys is non-Null, depending
 \item{eigengene}{Computed eigengene}
 \item{pi0}{Estimated proportion of non-null features (genes)}
 \item{foldchange}{p-vector of foldchanges for original data}
-\item{foldchange.star}{p by nperms.act matrix estimated foldchanges  from permuted data}
+\item{foldchange.star}{p by nperms.act matrix estimated foldchanges from permuted data}
 \item{sdstar.keep}{n by nperms.act matrix of standard deviations
 from each permutation}
 \item{censoring.status.star.keep}{n by nperms.act matrix of 
@@ -103,14 +128,19 @@ between the class mean and the overall mean}
 \item{stand.contrasts.95}{For multiclass data, 2.5% and 97.5% percentiles
 of standardized contrasts. Useful for determining which class contrast
 for significant genes, are large}
- \item{call }{calling sequence}
+\item{depth}{For array.type="seq", estimated sequencing depth for each sample.}
+\item{call}{calling sequence}
 }
 
  \references{Tusher, V.,  Tibshirani, R.  and Chu, G. (2001): 
 Significance analysis of microarrays applied to the ionizing radiation response  PNAS 2001 98: 5116-5121, (Apr 24). 
-http://www-stat.stanford.edu/~tibs/SAM}
+http://www-stat.stanford.edu/~tibs/SAM
 
-\author{Balasubrimanian Narasimhan and Robert Tibshirani}
+Li, Jun and Tibshirani, R. (2011). Finding consistent patterns: a nonparametric
+approach for identifying differential expression in
+RNA-Seq data. To appear, Statistical Methods in Medical Research.
+}
+\author{Jun Li and Balasubrimanian Narasimhan and Robert Tibshirani}
 
 
 \examples{
@@ -126,7 +156,8 @@ u<-matrix(2*rnorm(100),ncol=10,nrow=100)
 x[dd,11:20]<-x[dd,11:20]+u
 y<-c(rep(1,10),rep(2,10))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 
 samr.obj<-samr(data,  resp.type="Two class unpaired", nperms=100)
@@ -137,6 +168,27 @@ samr.plot(samr.obj,delta)
 delta.table <- samr.compute.delta.table(samr.obj)
 
 siggenes.table<-samr.compute.siggenes.table(samr.obj,delta, data, delta.table)
+
+# sequence data
+
+set.seed(3)
+x<-abs(100*matrix(rnorm(1000*20),ncol=20))
+x=trunc(x)
+y<- c(rep(1,10),rep(2,10))
+x[1:50,y==2]=x[1:50,y==2]+50
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""))
+
+samr.obj<-samr(data,  resp.type="Two class unpaired",assay.type="seq",  nperms=100)
+
+delta=5
+samr.plot(samr.obj,delta)
+
+delta.table <- samr.compute.delta.table(samr.obj)
+
+siggenes.table<-samr.compute.siggenes.table(samr.obj,delta, data, delta.table)
+
+
 
 
 
@@ -153,7 +205,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 y=c(-(1:10),1:10)
 
 
-d=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+d=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 
 samr.obj<-samr(d,  resp.type="Two class paired", nperms=100)
@@ -193,7 +246,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 
 y<-c(rep(1,20))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 samr.obj<-samr(data,  resp.type="One class", nperms=100)
 
@@ -225,7 +279,8 @@ x[1:50,6:10]= x[1:50,6:10]+2
 x[51:100,6:10]= x[51:100,6:10]-2
 
 y=c(rep(1,3),rep(2,3),rep(3,4))
-d=list(x=x,y=y,geneid=as.character(1:1000),genenames=paste("gene", as.character(1:1000))) 
+d=list(x=x,y=y,geneid=as.character(1:1000),
+genenames=paste("gene", as.character(1:1000))) 
 
 samr.obj <- samr(d,  resp.type="Multiclass")
 
@@ -240,7 +295,8 @@ samr.obj <- samr(d,  resp.type="Multiclass")
 # two class paired problem
 
 set.seed(8332)
-y=paste(c(rep(1,15),rep(2,15)),"Time",rep(c(1,2,3,4,5,1.1,2.5, 3.7, 4.1,5.5),3),sep="")
+y=paste(c(rep(1,15),rep(2,15)),"Time",rep(c(1,2,3,4,5,1.1,2.5, 3.7, 4.1,5.5),3),
+sep="")
 start=c(1,6,11,16,21,26)
 for(i in start){
 y[i]=paste(y[i],"Start",sep="")
@@ -257,7 +313,8 @@ x[51:100,16:20]=x[51:100,16:20]-matrix(3*c(0,1,2,3,4),ncol=5,nrow=50,byrow=TRUE)
 x[51:100,21:25]=x[51:100,21:25]-matrix(3*c(0,1,2,3,4),ncol=5,nrow=50,byrow=TRUE)
 x[51:100,26:30]=x[51:100,26:30]-matrix(3*c(0,1,2,3,4),ncol=5,nrow=50,byrow=TRUE)
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 samr.obj<- samr(data,  resp.type="Two class unpaired timecourse",
  nperms=100, time.summary.type="slope")

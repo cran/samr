@@ -5,7 +5,8 @@
 Plots of the results from samr.assess.samplesize
 }
 \usage{
-samr.assess.samplesize.plot(samr.assess.samplesize.obj, logx=TRUE, call.win.metafile=FALSE)
+samr.assess.samplesize.plot(samr.assess.samplesize.obj, logx=TRUE, 
+call.win.metafile=FALSE)
 }
 \arguments{
 \item{samr.assess.samplesize.obj}{ Object returned from call to samr.assess.samplesize}
@@ -23,7 +24,7 @@ Plots results: FDR (or 1-power) and FNR (or 1-type 1 error) from samr.assess.sam
 
 
 
-\author{Balasubrimanian Narasimhan and Robert Tibshirani}
+\author{Jun Li and Balasubrimanian Narasimhan and Robert Tibshirani}
 
 
 \examples{
@@ -37,7 +38,8 @@ x[dd,11:20]<-x[dd,11:20]+u
 
 y<-c(rep(1,10),rep(2,10))
 
-data=list(x=x,y=y, geneid=as.character(1:nrow(x)),genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
+data=list(x=x,y=y, geneid=as.character(1:nrow(x)),
+genenames=paste("g",as.character(1:nrow(x)),sep=""), logged2=TRUE)
 
 log2=function(x){log(x)/log(2)}
 

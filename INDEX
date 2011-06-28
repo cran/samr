@@ -1,9 +1,0 @@
-samr     Significance analysis of microarrays
-samr.assess.samplesize     Assess the sample size for a SAM analysis
-samr.assess.samplesize.plot     Make a plot of the results from samr.assess.samplesize
-samr.compute.delta.table     Compute delta table for SAM analysis
-samr.compute.siggenes.table     Compute significant genes table
-samr.missrate     Estimate the miss rate table for a SAM analysis
-samr.plot     Make Q-Q plot for SAM analysis 
-samr.tail.strength   Estimate tail strength for a dataset, from a SAM analysis
-samr.pvalues.from.perms  Report estimated p-values for each gene, from a SAM analysis

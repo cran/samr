@@ -1,12 +1,14 @@
 Package: samr
 Title: SAM: Significance Analysis of Microarrays
-Version: 2.0
-Author: R. Tibshirani, G. Chu, Balasubramanian Narasimhan, Jun Li
-Description: Significance Analysis of Microarrays
+Version: 3.0
+Author: R. Tibshirani, Michael J. Seo, G. Chu, Balasubramanian Narasimhan, Jun Li
+Description: Significance Analysis of Microarrays for differential expression analysis, RNAseq data and related problems.
 Maintainer: Rob Tibshirani <tibs@stanford.edu>
-Depends: impute, matrixStats
+biocViews:
+Imports: impute, matrixStats, shiny, shinyFiles, openxlsx, GSA
 License: LGPL
-URL: http://www-stat.stanford.edu/~tibs/SAM
-Packaged: 2011-06-28 17:40:23 UTC; tibs
+URL: https://statweb.stanford.edu/~tibs/SAM
+Packaged: 2018-10-16 00:56:47 UTC; tibs
 Repository: CRAN
-Date/Publication: 2011-06-29 09:42:31
+Date/Publication: 2018-10-16 10:00:03 UTC
+NeedsCompilation: yes

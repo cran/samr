@@ -1,21 +1,38 @@
+import(shiny)
+importFrom(shinyFiles, shinyFilesButton, shinyFileChoose, getVolumes)
+importFrom(openxlsx, read.xlsx, writeData, saveWorkbook, insertImage, addStyle, addWorksheet,
+           createWorkbook, setColWidths)
+import(matrixStats)
+importFrom(GSA, GSA, GSA.correlate, GSA.func, GSA.genescores, GSA.listsets, GSA.make.features,
+           GSA.plot, GSA.read.gmt)
+importFrom(impute, impute.knn)
+importFrom("grDevices", "dev.off")
+importFrom("graphics", "abline", "lines", "mtext", "par", "plot",
+           "points", "title")
+importFrom("stats", "mad", "median", "predict", "quantile", "rpois",
+           "runif", "smooth.spline", "var")
+
+S3method(print, SAMoutput)
+S3method(plot, SAMoutput)
+
 export(SAM,
-SAMseq,
-plot.SAMoutput,
-print.SAMoutput,
-samr, 
-check.format,
+       SAMseq,
+       plot.SAMoutput,
+       print.SAMoutput,
+       samr,
+       check.format,
        quantitative.func,
        ttest.func,
-samr.assess.samplesize,
-samr.assess.samplesize.plot,
+       samr.assess.samplesize,
+       samr.assess.samplesize.plot,
        samr.compute.delta.table,
        samr.compute.siggenes.table,
        samr.plot,
        samr.missrate,
        samr.norm.data,
        samr.estimate.depth,
-samr.pvalues.from.perms,
-samr.tail.strength,
+       samr.pvalues.from.perms,
+       samr.tail.strength,
        samr.const.quantitative.response,
        samr.const.twoclass.unpaired.response,
        samr.const.survival.response,
@@ -26,10 +43,5 @@ samr.tail.strength,
        samr.const.twoclass.paired.timecourse.response,
        samr.const.oneclass.timecourse.response,
        samr.const.patterndiscovery.response,
-       samr.xl.build.data,
-       samr.xl.error.trace,
-       samr.xl.compute.plot.xy,
-       samr.xl.impute.data,
-       samr.xl.parse.survival,
-       samr.xl.parse.patterndiscovery)
-useDynLib(samr) 
+       runSAM)
+useDynLib(samr)

@@ -5,13 +5,11 @@
 Plots of the results from samr.assess.samplesize
 }
 \usage{
-samr.assess.samplesize.plot(samr.assess.samplesize.obj, logx=TRUE, 
-call.win.metafile=FALSE)
+samr.assess.samplesize.plot(samr.assess.samplesize.obj, logx=TRUE)
 }
 \arguments{
 \item{samr.assess.samplesize.obj}{ Object returned from call to samr.assess.samplesize}
 \item{logx}{Should logs be used on the horizontal (\# of genes) axis? Default TRUE} 
-\item{call.win.metafile}{Used by Excel interface}
 }
 \references{Tusher, V.,  Tibshirani, R.  and Chu, G. (2001):
 Significance analysis of microarrays applied to the ionizing radiation response"  PNAS 2001 98: 5116-5121, (Apr 24).

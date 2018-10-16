@@ -40,13 +40,6 @@
 \alias{samr.const.twoclass.paired.timecourse.response}
 \alias{samr.const.oneclass.timecourse.response}
 \alias{samr.const.patterndiscovery.response}
-\alias{samr.xl.const.response.types.table}
-\alias{samr.xl.build.data}
-\alias{samr.xl.compute.plot.xy}
-\alias{samr.xl.parse.survival}
-\alias{samr.xl.parse.patterndiscovery}
-\alias{samr.xl.error.trace}
-\alias{samr.xl.impute.data}
 \alias{resample}
 \alias{wilcoxon.unpaired.seq.func}
 \alias{wilcoxon.paired.seq.func}
@@ -106,13 +99,6 @@ samr.const.twoclass.unpaired.timecourse.response
 samr.const.twoclass.paired.timecourse.response
 samr.const.oneclass.timecourse.response
 samr.const.patterndiscovery.response
-samr.xl.const.response.types.table
-samr.xl.build.data(x, y, geneid, genenames, logged2, resp.type)
-samr.xl.compute.plot.xy(samr.obj, del, min.foldchange = 0, plot = FALSE)
-samr.xl.parse.survival(y)
-samr.xl.parse.patterndiscovery(y)
-samr.xl.error.trace()
-samr.xl.impute.data(data.obj)
 resample(x, d, nresamp=20)
 wilcoxon.unpaired.seq.func(xresamp, y)
 wilcoxon.paired.seq.func(xresamp, y)
@@ -127,8 +113,8 @@ generate.dels(samr.obj, min.foldchange=0)
 foldchange.seq.twoclass.paired(x, y, depth)
 foldchange.seq.twoclass.unpaired(x, y, depth)
 samr.compute.delta.table.array(samr.obj, min.foldchange=0, dels=NULL, nvals=50)
-plot.SAMoutput(x, ...)
-print.SAMoutput(x, ...)
+\method{plot}{SAMoutput}(x, ...)
+\method{print}{SAMoutput}(x, ...)
 }
 \author{Jun Li and Balasubrimanian Narasimhan and Robert Tibshirani}
 

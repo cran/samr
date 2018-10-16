@@ -1,12 +1,12 @@
 C Output from Public domain Ratfor, version 1.0
-      subroutine rankcol (x,n,p,xr,iscrat)
-      integer n,p,iscrat(n),xr(n,p)
-      real x(n,p)
-      do23000 j=1,p
+      subroutine rankcol (x,n,ip,ixr,iscrat)
+      integer n,ip,iscrat(n),ixr(n,ip)
+      double precision x(n,ip)
+      do23000 j=1,ip
       call sortrx(n,x(1,j),iscrat)
       do23002 i=1,n
       ii=iscrat(i)
-      xr(ii,j)=i
+      ixr(ii,j)=i
 23002 continue
 23003 continue
 23000 continue
@@ -23,11 +23,11 @@ C than a pure QuickSort on short or partially ordered input arrays.
 
 C===================================================================
 C
-C     SORTRX -- SORT, Real input, indeX output
+C     SORTRX -- SORT, Double Precision input, indeX output
 C
 C
 C     Input:  N     INTEGER
-C             DATA  REAL
+C             DATA  DOUBLE PRECISION
 C
 C     Output: INDEX INTEGER (DIMENSION N)
 C
@@ -60,11 +60,11 @@ C
 C===================================================================
  
       INTEGER   N,INDEX(N)
-      REAL      DATA(N)
+      DOUBLE PRECISION      DATA(N)
  
       INTEGER   LSTK(31),RSTK(31),ISTK
       INTEGER   L,R,I,J,P,INDEXP,INDEXT
-      REAL      DATAP
+      DOUBLE PRECISION      DATAP
  
 C     QuickSort Cutoff
 C

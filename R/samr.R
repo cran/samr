@@ -15,16 +15,16 @@ samr.const.green.color <- 10
 samr.const.black.color <- 1
 # Note: the table samr.xl.data.types created by the
 # the Excel calling program has exactly these names as well
-samr <- function(data, resp.type = c("Quantitative", 
-	"Two class unpaired", "Survival", "Multiclass", "One class", 
-	"Two class paired", "Two class unpaired timecourse", "One class timecourse", 
-	"Two class paired timecourse", "Pattern discovery"), assay.type = c("array", 
-	"seq"), s0 = NULL, s0.perc = NULL, nperms = 100, center.arrays = FALSE, 
-	testStatistic = c("standard", "wilcoxon"), time.summary.type = c("slope", 
-		"signed.area"), regression.method = c("standard", "ranks"), 
+samr <- function(data, resp.type = c("Quantitative",
+	"Two class unpaired", "Survival", "Multiclass", "One class",
+	"Two class paired", "Two class unpaired timecourse", "One class timecourse",
+	"Two class paired timecourse", "Pattern discovery"), assay.type = c("array",
+	"seq"), s0 = NULL, s0.perc = NULL, nperms = 100, center.arrays = FALSE,
+	testStatistic = c("standard", "wilcoxon"), time.summary.type = c("slope",
+		"signed.area"), regression.method = c("standard", "ranks"),
 	return.x = FALSE,
-	knn.neighbors = 10, random.seed = NULL, 
-	nresamp = 20, nresamp.perm = NULL, xl.mode = c("regular", 
+	knn.neighbors = 10, random.seed = NULL,
+	nresamp = 20, nresamp.perm = NULL, xl.mode = c("regular",
 		"firsttime", "next20", "lasttime"), xl.time = NULL, xl.prevfit = NULL) {
 	##SAM method. copyright june 2000: Goss, Tibshirani and
 	#   Chu.
@@ -106,17 +106,16 @@ samr <- function(data, resp.type = c("Quantitative",
 		}
 		# impute missing data
 		if (sum(is.na(x)) > 0) {
-			require(impute)
-			x = impute.knn(x, k = knn.neighbors)
-			if (!is.matrix(x)) {
-				x = x$data
-			}
+                  x = impute.knn(x, k = knn.neighbors)
+                  if (!is.matrix(x)) {
+                    x = x$data
+                  }
 		}
 		are.blocks.specified = FALSE
 		# check that resp.type ok for seq data
-		cond = (resp.type == "One class") | (resp.type == "Two class unpaired timecourse") | 
-			(resp.type == "One class unpaired timecourse") | 
-			(resp.type == "Two class paired timecourse") | (resp.type == 
+		cond = (resp.type == "One class") | (resp.type == "Two class unpaired timecourse") |
+			(resp.type == "One class unpaired timecourse") |
+			(resp.type == "Two class paired timecourse") | (resp.type ==
 			"Pattern discovery")
 		if (assay.type == "seq" & cond) {
 			stop(paste("Resp.type=", resp.type, " not allowed when assay.type='seq'"))
@@ -124,14 +123,14 @@ samr <- function(data, resp.type = c("Quantitative",
 		if (assay.type == "seq" & min(x) < 0) {
 			stop(paste("Negative values not allowed when assay.type='seq'"))
 		}
-		
+
 		## Jun added starts
 		## check whether x are counts
 		if (assay.type == "seq" & (sum(x%%1 != 0) != 0)) {
 			stop("Non-integer values not alled when assay.type='seq'")
 		}
 		## Jun added ends
-		
+
 		# center columns of  array data if requested.
 		# should not be allowed for seq data
 		if (assay.type == "seq" & center.arrays) {
@@ -156,7 +155,7 @@ samr <- function(data, resp.type = c("Quantitative",
 		scaling.factors = (prod(depth)^(1/length(depth)))/depth
 		# check if there are blocks for 2 class unpaired case
 		if (resp.type == samr.const.twoclass.unpaired.response) {
-			if (substring(y[1], 2, 6) == "Block" | substring(y[1], 
+			if (substring(y[1], 2, 6) == "Block" | substring(y[1],
 				2, 6) == "block") {
 				junk = parse.block.labels.for.2classes(y)
 				y = junk$y
@@ -166,25 +165,25 @@ samr <- function(data, resp.type = c("Quantitative",
 		}
 		# make sure 1,2, -1,1,, etc are non-character values coming
 		#   from Excel
-		if (resp.type == samr.const.twoclass.unpaired.response | 
-			resp.type == samr.const.twoclass.paired.response | 
-			resp.type == samr.const.oneclass.response | resp.type == 
+		if (resp.type == samr.const.twoclass.unpaired.response |
+			resp.type == samr.const.twoclass.paired.response |
+			resp.type == samr.const.oneclass.response | resp.type ==
 			samr.const.quantitative.response | resp.type == samr.const.multiclass.response) {
 			y = as.numeric(y)
 		}
 		# parse and summarize, if timecourse data
 		sd.internal = NULL
-		if (resp.type == samr.const.twoclass.unpaired.timecourse.response | 
-			resp.type == samr.const.twoclass.paired.timecourse.response | 
+		if (resp.type == samr.const.twoclass.unpaired.timecourse.response |
+			resp.type == samr.const.twoclass.paired.timecourse.response |
 			resp.type == samr.const.oneclass.timecourse.response) {
-			junk = parse.time.labels.and.summarize.data(x, y, 
+			junk = parse.time.labels.and.summarize.data(x, y,
 				resp.type, time.summary.type)
 			y = junk$y
 			x = junk$x
 			sd.internal = sqrt(rowMeans(junk$sd^2))
 			if (min(table(y)) == 1) {
 				cat("", fill = T)
-				cat("Warning: only one timecourse in one or more classes;\nSAM plot and FDRs will be unreliable; only gene scores are informative", 
+				cat("Warning: only one timecourse in one or more classes;\nSAM plot and FDRs will be unreliable; only gene scores are informative",
 				  fill = T)
 			}
 		}
@@ -210,7 +209,7 @@ samr <- function(data, resp.type = c("Quantitative",
 		# do a thorough error  checking of the response data
 		check.format(y, resp.type = resp.type, censoring.status = censoring.status)
 		# transform to ranks if appropriate
-		if (resp.type == samr.const.quantitative.response & regression.method == 
+		if (resp.type == samr.const.quantitative.response & regression.method ==
 			"ranks") {
 			y = rank(y)
 			x = t(apply(x, 1, rank))
@@ -220,49 +219,49 @@ samr <- function(data, resp.type = c("Quantitative",
 		sd <- NULL
 		numer <- NULL
 		# initial computation to get sd
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			testStatistic == "standard" & assay.type == "array") {
 			init.fit <- ttest.func(x, y, sd = sd.internal)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			testStatistic == "wilcoxon" & assay.type == "array") {
 			init.fit <- wilcoxon.func(x, y)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.oneclass.response & assay.type == 
+		if (resp.type == samr.const.oneclass.response & assay.type ==
 			"array") {
 			init.fit <- onesample.ttest.func(x, y, sd = sd.internal)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.twoclass.paired.response & 
+		if (resp.type == samr.const.twoclass.paired.response &
 			assay.type == "array") {
 			init.fit <- paired.ttest.func(x, y, sd = sd.internal)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.survival.response & assay.type == 
+		if (resp.type == samr.const.survival.response & assay.type ==
 			"array") {
 			init.fit <- cox.func(x, y, censoring.status)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.multiclass.response & assay.type == 
+		if (resp.type == samr.const.multiclass.response & assay.type ==
 			"array") {
 			init.fit <- multiclass.func(x, y)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.quantitative.response & assay.type == 
+		if (resp.type == samr.const.quantitative.response & assay.type ==
 			"array") {
 			init.fit <- quantitative.func(x, y)
 			numer <- init.fit$numer
 			sd <- init.fit$sd
 		}
-		if (resp.type == samr.const.patterndiscovery.response & 
+		if (resp.type == samr.const.patterndiscovery.response &
 			assay.type == "array") {
 			init.fit <- patterndiscovery.func(x)
 			numer <- init.fit$numer
@@ -276,12 +275,12 @@ samr <- function(data, resp.type = c("Quantitative",
 		# also if dataset is small (< 500 genes), we don't attempt
 		#   automatic
 		# estimation of s0
-		if ((resp.type == samr.const.quantitative.response & 
-			(testStatistic == "wilcoxon" | regression.method == 
-				"ranks" & assay.type == "array") | resp.type == 
-			samr.const.patterndiscovery.response) | resp.type == 
-			samr.const.twoclass.unpaired.response & assay.type == 
-			"array" & testStatistic == "wilcoxon" | (nrow(x) < 
+		if ((resp.type == samr.const.quantitative.response &
+			(testStatistic == "wilcoxon" | regression.method ==
+				"ranks" & assay.type == "array") | resp.type ==
+			samr.const.patterndiscovery.response) | resp.type ==
+			samr.const.twoclass.unpaired.response & assay.type ==
+			"array" & testStatistic == "wilcoxon" | (nrow(x) <
 			500) & is.null(s0) & is.null(s0.perc)) {
 			s0 = quantile(sd, 0.05)
 			s0.perc = 0.05
@@ -289,7 +288,7 @@ samr <- function(data, resp.type = c("Quantitative",
 		# estimate s0 if necessary
 		if (is.null(s0) & assay.type == "array") {
 			if (!is.null(s0.perc)) {
-				if ((s0.perc != -1 & s0.perc < 0) | s0.perc > 
+				if ((s0.perc != -1 & s0.perc < 0) | s0.perc >
 				  100) {
 				  stop("Illegal value for s0.perc: must be between 0 and 100, or equal\nto (-1) (meaning that s0 should be set to zero)")
 				}
@@ -312,72 +311,72 @@ samr <- function(data, resp.type = c("Quantitative",
 		# compute test statistics on original data
 		##################
 		# array type data
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			testStatistic == "standard" & assay.type == "array") {
 			tt <- ttest.func(x, y, s0 = s0, sd = sd.internal)$tt
 		}
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			testStatistic == "wilcoxon" & assay.type == "array") {
 			tt <- wilcoxon.func(x, y, s0 = s0)$tt
 		}
-		if (resp.type == samr.const.oneclass.response & assay.type == 
+		if (resp.type == samr.const.oneclass.response & assay.type ==
 			"array") {
 			tt <- onesample.ttest.func(x, y, s0 = s0, sd = sd.internal)$tt
 		}
-		if (resp.type == samr.const.twoclass.paired.response & 
+		if (resp.type == samr.const.twoclass.paired.response &
 			assay.type == "array") {
 			tt <- paired.ttest.func(x, y, s0 = s0, sd = sd.internal)$tt
 		}
-		if (resp.type == samr.const.survival.response & assay.type == 
+		if (resp.type == samr.const.survival.response & assay.type ==
 			"array") {
 			tt <- cox.func(x, y, censoring.status, s0 = s0)$tt
 		}
-		if (resp.type == samr.const.multiclass.response & assay.type == 
+		if (resp.type == samr.const.multiclass.response & assay.type ==
 			"array") {
 			junk2 <- multiclass.func(x, y, s0 = s0)
 			tt = junk2$tt
 			stand.contrasts = junk2$stand.contrasts
 		}
-		if (resp.type == samr.const.quantitative.response & assay.type == 
+		if (resp.type == samr.const.quantitative.response & assay.type ==
 			"array") {
 			tt <- quantitative.func(x, y, s0 = s0)$tt
 		}
-		if (resp.type == samr.const.patterndiscovery.response & 
+		if (resp.type == samr.const.patterndiscovery.response &
 			assay.type == "array") {
 			junk <- patterndiscovery.func(x, s0 = s0, eigengene.number = eigengene.number)
 			tt <- junk$tt
 			eigengene = junk$eigengene
 		}
 		#seq data
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			assay.type == "seq") {
 			junk = wilcoxon.unpaired.seq.func(xresamp, y)
 			tt = junk$tt
 			numer = junk$numer
 			sd = junk$sd
 		}
-		if (resp.type == samr.const.twoclass.paired.response & 
+		if (resp.type == samr.const.twoclass.paired.response &
 			assay.type == "seq") {
 			junk <- wilcoxon.paired.seq.func(xresamp, y)
 			tt = junk$tt
 			numer = junk$numer
 			sd = junk$sd
 		}
-		if (resp.type == samr.const.quantitative.response & assay.type == 
+		if (resp.type == samr.const.quantitative.response & assay.type ==
 			"seq") {
 			junk <- quantitative.seq.func(xresamp, y)
 			tt = junk$tt
 			numer = junk$numer
 			sd = junk$sd
 		}
-		if (resp.type == samr.const.survival.response & assay.type == 
+		if (resp.type == samr.const.survival.response & assay.type ==
 			"seq") {
 			junk <- cox.seq.func(xresamp, y, censoring.status)
 			tt = junk$tt
 			numer = junk$numer
 			sd = junk$sd
 		}
-		if (resp.type == samr.const.multiclass.response & assay.type == 
+		if (resp.type == samr.const.multiclass.response & assay.type ==
 			"seq") {
 			junk2 <- multiclass.seq.func(xresamp, y)
 			tt = junk2$tt
@@ -387,7 +386,7 @@ samr <- function(data, resp.type = c("Quantitative",
 		}
 		###########
 		# construct matrix of permutations
-		if (resp.type == samr.const.quantitative.response | resp.type == 
+		if (resp.type == samr.const.quantitative.response | resp.type ==
 			samr.const.multiclass.response | resp.type == samr.const.survival.response) {
 			junk <- getperms(y, nperms)
 			perms = junk$perms
@@ -424,7 +423,7 @@ samr <- function(data, resp.type = c("Quantitative",
 				for (i in allii) {
 				  junk = integer.base.b(i, b = 2)
 				  if (length(junk) < length(y)) {
-					junk = c(rep(0, length(y) - length(junk)), 
+					junk = c(rep(0, length(y) - length(junk)),
 					  junk)
 				  }
 				  k = k + 1
@@ -433,7 +432,7 @@ samr <- function(data, resp.type = c("Quantitative",
 			}
 			else {
 				for (i in 1:nperms.act) {
-				  permsy[i, ] = sample(c(-1, 1), size = length(y), 
+				  permsy[i, ] = sample(c(-1, 1), size = length(y),
 					replace = TRUE)
 				}
 			}
@@ -459,23 +458,23 @@ samr <- function(data, resp.type = c("Quantitative",
 			sdstar.keep <- matrix(0, ncol = nperms.act, nrow = nrow(x))
 		}
 		## Jun added ends
-		
+
 		## Jun commented the following 4 lines
 #		censoring.status.star.keep <- NULL
 #		if (resp.type == samr.const.survival.response) {
-#			censoring.status.star.keep <- matrix(0, ncol = nperms.act, 
+#			censoring.status.star.keep <- matrix(0, ncol = nperms.act,
 #				nrow = length(y))
 #		}
-		
+
 		ttstar <- matrix(0, nrow = nrow(x), ncol = nperms.act)
 		foldchange.star = NULL
-		if (resp.type == samr.const.twoclass.unpaired.response | 
+		if (resp.type == samr.const.twoclass.unpaired.response |
 			resp.type == samr.const.twoclass.paired.response) {
 			foldchange.star <- matrix(0, nrow = nrow(x), ncol = nperms.act)
 		}
-		if (resp.type == samr.const.multiclass.response) 
+		if (resp.type == samr.const.multiclass.response)
 		{
-			stand.contrasts.star = array(NA, c(nrow(x), length(table(y)), 
+			stand.contrasts.star = array(NA, c(nrow(x), length(table(y)),
 				nperms.act))
 		}
 		# end of if(xltime=='regular' etc
@@ -551,22 +550,22 @@ samr <- function(data, resp.type = c("Quantitative",
 		if (resp.type == samr.const.oneclass.response) {
 			ystar = permsy[b, ]
 			if (testStatistic == "standard") {
-				ttstar[, b] <- onesample.ttest.func(xstar, ystar, 
+				ttstar[, b] <- onesample.ttest.func(xstar, ystar,
 				  s0 = s0, sd = sd.internal)$tt
 			}
 		}
 		if (resp.type == samr.const.twoclass.paired.response) {
 			ystar = permsy[b, ]
 			if (assay.type == "array") {
-				ttstar[, b] <- paired.ttest.func(xstar, ystar, 
+				ttstar[, b] <- paired.ttest.func(xstar, ystar,
 				  s0 = s0, sd = sd.internal)$tt
-				foldchange.star[, b] = foldchange.paired(xstar, 
+				foldchange.star[, b] = foldchange.paired(xstar,
 				  ystar, data$logged2)
 			}
 			if (assay.type == "seq") {
-				ttstar[, b] <- wilcoxon.paired.seq.func(xstar, 
+				ttstar[, b] <- wilcoxon.paired.seq.func(xstar,
 				  ystar)$tt
-				foldchange.star[, b] <- foldchange.seq.twoclass.paired(x, 
+				foldchange.star[, b] <- foldchange.seq.twoclass.paired(x,
 				  ystar, depth)  ## Jun added this line
 			}
 		}
@@ -581,20 +580,20 @@ samr <- function(data, resp.type = c("Quantitative",
 				}
 				ttstar[, b] <- junk$tt
 				sdstar.keep[, b] <- junk$sd
-				foldchange.star[, b] = foldchange.twoclass(xstar, 
+				foldchange.star[, b] = foldchange.twoclass(xstar,
 				  ystar, data$logged2)
 			}
 			if (assay.type == "seq") {
-				ttstar[, b] <- wilcoxon.unpaired.seq.func(xstar, 
+				ttstar[, b] <- wilcoxon.unpaired.seq.func(xstar,
 				  ystar)$tt
-				foldchange.star[, b] <- foldchange.seq.twoclass.unpaired(x, 
+				foldchange.star[, b] <- foldchange.seq.twoclass.unpaired(x,
 				  ystar, depth)  ## Jun added this line
 			}
 		}
 		if (resp.type == samr.const.survival.response) {
 			o <- perms[b, ]
 			if (assay.type == "array") {
-				ttstar[, b] <- cox.func(xstar, y[o], censoring.status = censoring.status[o], 
+				ttstar[, b] <- cox.func(xstar, y[o], censoring.status = censoring.status[o],
 				  s0 = s0)$tt
 			}
 			if (assay.type == "seq") {
@@ -661,21 +660,21 @@ samr <- function(data, resp.type = c("Quantitative",
 		pi0 <- sum(tt > qq[1] & tt < qq[2])/(0.5 * length(tt))
 		# compute fold changes, when applicable
 		foldchange = NULL
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			assay.type == "array") {
 			foldchange = foldchange.twoclass(x, y, data$logged2)
 		}
-		if (resp.type == samr.const.twoclass.paired.response & 
+		if (resp.type == samr.const.twoclass.paired.response &
 			assay.type == "array") {
 			foldchange = foldchange.paired(x, y, data$logged2)
 		}
-		if (resp.type == samr.const.oneclass.response & assay.type == 
+		if (resp.type == samr.const.oneclass.response & assay.type ==
 			"array") {
 		}
 		stand.contrasts.95 = NULL
 		if (resp.type == samr.const.multiclass.response)
 		{
-			stand.contrasts.95 = quantile(stand.contrasts.star, 
+			stand.contrasts.95 = quantile(stand.contrasts.star,
 				c(0.025, 0.975))
 		}
 		#if(assay.type=='seq'){foldchange=rep(NA,length(tt))} ##
@@ -684,14 +683,14 @@ samr <- function(data, resp.type = c("Quantitative",
 		#   delete x, since it is very big and is not needed
 		#   further
 		## Jun added starts
-		if (resp.type == samr.const.twoclass.unpaired.response & 
+		if (resp.type == samr.const.twoclass.unpaired.response &
 			assay.type == "seq") {
-			foldchange <- foldchange.seq.twoclass.unpaired(x, 
+			foldchange <- foldchange.seq.twoclass.unpaired(x,
 				y, depth)
 		}
-		if (resp.type == samr.const.twoclass.paired.response & 
+		if (resp.type == samr.const.twoclass.paired.response &
 			assay.type == "seq") {
-			foldchange <- foldchange.seq.twoclass.paired(x, y, 
+			foldchange <- foldchange.seq.twoclass.paired(x, y,
 				depth)
 		}
 		## Jun added ends
@@ -699,12 +698,12 @@ samr <- function(data, resp.type = c("Quantitative",
 			x = NULL
 		}
 	}
-	
+
 	return(list(n=n,
 	x=x,
 	xresamp=xresamp,
 	y=y,
-	argy=argy, 
+	argy=argy,
 	censoring.status= censoring.status,
 	testStatistic=testStatistic,
 	nperms=nperms,
@@ -726,7 +725,7 @@ samr <- function(data, resp.type = c("Quantitative",
 	eigengene=eigengene,
 	eigengene.number=eigengene.number,
 	pi0=pi0,
-	foldchange=foldchange, 
+	foldchange=foldchange,
 	foldchange.star=foldchange.star,
 	sdstar.keep=sdstar.keep,
 	#censoring.status.star.keep=censoring.status.star.keep,	## Jun commented this line
@@ -739,4 +738,4 @@ samr <- function(data, resp.type = c("Quantitative",
 	depth=depth,
 	#scaling.factors=scaling.factors,	## Jun commented this line
 	call=this.call))
-} 
+}

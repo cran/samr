@@ -347,6 +347,9 @@ samr <- function(data, resp.type = c("Quantitative",
 			tt <- junk$tt
 			eigengene = junk$eigengene
 		}
+
+		tt[is.na(tt)] <- 0
+
 		#seq data
 		if (resp.type == samr.const.twoclass.unpaired.response &
 			assay.type == "seq") {

@@ -64,7 +64,7 @@ test). Only used for array data.}
 on ranked data). Only used for array data.}
 \item{return.x}{Should the matrix of feature values be returned?
 Only useful for time course data, where x contains summaries of the features
-over time. Otherwise x is the same as the input data data\$x}
+over time. Otherwise x is the same as the input data data$x}
 \item{knn.neighbors}{Number of nearest neighbors to use for imputation
 of missing features values. Only used for array data.}
 \item{random.seed}{Optional initial seed for random number generator (integer)}

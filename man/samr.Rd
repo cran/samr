@@ -56,7 +56,7 @@ test). Only used for array data.}
 on ranked data). Only used for array data.}
 \item{return.x}{Should the matrix of feature values be returned?
 Only useful for time course data, where x contains summaries of the features
-over time. Otherwise x is the same as the input data data\$x}
+over time. Otherwise x is the same as the input data data$x}
 \item{knn.neighbors}{Number of nearest neighbors to use for imputation
 of missing features values. Only used for array data.}
 \item{random.seed}{Optional initial seed for random number generator (integer)}
@@ -81,20 +81,20 @@ at http://www-stat.stanford.edu/~tibs/SAM}
 \value{
 A list with components
 \item{n}{Number of observations}
-\item{x}{Data matrix p by n (p=\# genes or features). Equal to the  matrix data\$x  in the original call to samr except
+\item{x}{Data matrix p by n (p=# genes or features). Equal to the  matrix data$x  in the original call to samr except
 for (1) time course analysis, where is contains the summarized data
 or (2) quantitative outcome with rank regression, where it contains
 the data transformed to ranks. Hence it is null except for in time course analysis. }
-\item{y}{Vector of n outcome values. equal the values data\$y in the original call to samr, except
+\item{y}{Vector of n outcome values. equal the values data$y in the original call to samr, except
 for (1) time course analysis, where is contains the summarized y 
 or (2) quantitative outcome with rank regression, where it contains
 the y values transformed to ranks}
-\item{argy}{The  values data\$y in the original call to samr} 
+\item{argy}{The  values data$y in the original call to samr} 
 \item{censoring.status}{Censoring status indicators if applicable}
 \item{testStatistic}{Test Statistic used},
 \item{nperms}{Number of permutations requested}
 \item{nperms.act}{Number of permutations actually used. Will be <
-nperms when \# of possible permutations  <= nperms (in which case
+nperms when # of possible permutations  <= nperms (in which case
 all permutations are done)}
 \item{tt}{tt=numer/sd, the  vector of p test statistics for original data}
 \item{numer}{Numerators for tt}

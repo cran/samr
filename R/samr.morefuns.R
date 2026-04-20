@@ -1424,7 +1424,7 @@ samr.tail.strength = function(samr.obj) {
 ######################################################################
 samr.estimate.depth <- function(x) {
 	iter <- 5
-	cmeans <- colSums(x)/sum(x)
+	cmeans <- colSums(x)/sum(as.numeric(x))
 	for (i in 1:iter) {
 		n0 <- rowSums(x) %*% t(cmeans)
 		prop <- rowSums((x - n0)^2/(n0 + 1e-08))

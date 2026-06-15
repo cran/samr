@@ -577,7 +577,7 @@ samr.compute.siggenes.table = function(samr.obj, del,
 		{
 			res.up = cbind(sig$pup + 1, data$genenames[sig$pup],
 			data$geneid[sig$pup], samr.obj$tt[sig$pup], samr.obj$numer[sig$pup],
-			samr.obj$sd[sig$pup], samr.obj$stand.contrasts[sig$pup, ], qvalues$qvalue.up)
+			samr.obj$sd[sig$pup], samr.obj$stand.contrasts[sig$pup, ,drop=F], qvalues$qvalue.up)
 
 			if (compute.localfdr)
 			{
